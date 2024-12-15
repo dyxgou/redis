@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github/dyxgou/redis/internal/server"
 	"github/dyxgou/redis/pkg/config"
-	"github/dyxgou/redis/pkg/server"
 	"log"
 )
 
