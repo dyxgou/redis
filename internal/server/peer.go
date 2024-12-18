@@ -1,6 +1,9 @@
 package server
 
-import "net"
+import (
+	"log/slog"
+	"net"
+)
 
 type Peer struct {
 	conn  net.Conn
@@ -12,6 +15,11 @@ func NewPeer(conn net.Conn, msgch chan<- []byte) *Peer {
 		conn:  conn,
 		msgch: msgch,
 	}
+}
+
+func (p *Peer) closeConn(err error) {
+	slog.Error("conn closed due to", "err", err, "at", p.conn.RemoteAddr())
+	p.conn.Close()
 }
 
 func (p *Peer) readConn() error {
@@ -26,7 +34,6 @@ func (p *Peer) readConn() error {
 
 		msgBuf := make([]byte, n)
 		copy(msgBuf, buf[:n])
-
 		p.msgch <- msgBuf
 	}
 }

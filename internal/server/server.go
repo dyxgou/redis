@@ -3,9 +3,12 @@ package server
 import (
 	"log/slog"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
-const tcpListener = "tcp"
+const tcpMethod = "tcp"
 
 type Config struct {
 	ListenAddr string
@@ -14,7 +17,7 @@ type Config struct {
 type Server struct {
 	Config
 	ln     net.Listener
-	quitch chan struct{}
+	quitch chan os.Signal
 
 	msgch chan []byte
 
@@ -25,7 +28,7 @@ type Server struct {
 func NewServer(cfg Config) *Server {
 	return &Server{
 		Config:    cfg,
-		quitch:    make(chan struct{}),
+		quitch:    make(chan os.Signal, 1),
 		msgch:     make(chan []byte),
 		peers:     make(map[*Peer]struct{}),
 		addPeerCh: make(chan *Peer),
@@ -33,18 +36,26 @@ func NewServer(cfg Config) *Server {
 }
 
 func (s *Server) Start() error {
-	ln, err := net.Listen(tcpListener, s.Config.ListenAddr)
+	ln, err := net.Listen(tcpMethod, s.Config.ListenAddr)
+	defer ln.Close()
+
+	signal.Notify(s.quitch, os.Interrupt, syscall.SIGTERM)
 
 	if err != nil {
 		return err
 	}
 
-	slog.Info("server started at", "addr", s.Config.ListenAddr)
+	slog.Info("server started at", "addr", s.Config.ListenAddr, "PID", os.Getpid())
 	s.ln = ln
 
 	go s.loop()
 
 	return s.acceptLoop()
+}
+
+func (s *Server) close() {
+	slog.Info("server closed succesfully")
+	os.Exit(0)
 }
 
 func (s *Server) loop() {
@@ -55,7 +66,7 @@ func (s *Server) loop() {
 		case msg := <-s.msgch:
 			slog.Info("new message", "msg", string(msg))
 		case <-s.quitch:
-			return
+			s.close()
 		}
 	}
 }
@@ -80,6 +91,6 @@ func (s *Server) handleConn(conn net.Conn) {
 	s.addPeerCh <- peer
 
 	if err := peer.readConn(); err != nil {
-		slog.Error("connection failed ", "err", err)
+		peer.closeConn(err)
 	}
 }
