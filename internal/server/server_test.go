@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"testing"
 	"time"
 )
+
+var ts *TestSuite
 
 type TestSuite struct {
 	server *Server
@@ -29,7 +32,16 @@ func NewTestSuite(c Config) *TestSuite {
 }
 
 func (ts *TestSuite) close() {
-	close(ts.donech)
+	ts.server.quitch <- os.Interrupt
+}
+
+func TestMain(m *testing.M) {
+	ts = NewTestSuite(Config{ListenAddr: ":5000"})
+
+	code := m.Run()
+
+	ts.close()
+	os.Exit(code)
 }
 
 func (ts *TestSuite) sendMessage(msg string, conn net.Conn) error {
@@ -55,10 +67,9 @@ func (ts *TestSuite) sendMessage(msg string, conn net.Conn) error {
 	}
 }
 
-func TestServerConnection(t *testing.T) {
-	ts := NewTestSuite(Config{ListenAddr: ":5000"})
-
+func TestSendMessage(t *testing.T) {
 	conn, err := net.Dial(tcpMethod, ts.addr)
+	defer conn.Close()
 
 	if err != nil {
 		t.Error(err)
@@ -70,7 +81,5 @@ func TestServerConnection(t *testing.T) {
 		t.Error(err)
 	}
 
-	t.Log("message sent succesfully")
-
-	t.Cleanup(ts.close)
+	t.Log("message sent succesfully!")
 }
