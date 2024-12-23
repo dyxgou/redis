@@ -15,8 +15,22 @@ func TestInputToken(t *testing.T) {
 		{":", token.New(token.INTEGER, ":")},
 		{"GET", token.New(token.GET, "GET")},
 		{"GETSET", token.New(token.GETSET, "GETSET")},
+		{"GETEX", token.New(token.GETEX, "GETEX")},
 		{"GETDEL", token.New(token.GETDEL, "GETDEL")},
 		{"SET", token.New(token.SET, "SET")},
+		{"INCR", token.New(token.INCR, "INCR")},
+		{"INCRBY", token.New(token.INCRBY, "INCRBY")},
+		{"DECR", token.New(token.DECR, "DECR")},
+		{"DECRBY", token.New(token.DECRBY, "DECRBY")},
+		{"MGET", token.New(token.MGET, "MGET")},
+		{"MSET", token.New(token.MSET, "MSET")},
+		{"APPEND", token.New(token.APPEND, "APPEND")},
+		{"EXISTS", token.New(token.EXISTS, "EXISTS")},
+		{"STRLEN", token.New(token.STRLEN, "STRLEN")},
+		{"SUBSTR", token.New(token.SUBSTR, "SUBSTR")},
+		{"XX", token.New(token.XX, "XX")},
+		{"NX", token.New(token.NX, "NX")},
+		{"EX", token.New(token.EX, "EX")},
 	}
 
 	for _, tt := range tests {
@@ -53,11 +67,15 @@ func TestCommandTokenized(t *testing.T) {
 		input          string
 		expectedTokens []token.Token
 	}{
-		input: "GET my_key my_value",
+		input: "SET my_key my_value EX 20 NX XX",
 		expectedTokens: []token.Token{
-			{Kind: token.GET, Literal: "GET"},
+			{Kind: token.SET, Literal: "SET"},
 			{Kind: token.IDENT, Literal: "my_key"},
 			{Kind: token.IDENT, Literal: "my_value"},
+			{Kind: token.EX, Literal: "EX"},
+			{Kind: token.INTEGER, Literal: "20"},
+			{Kind: token.NX, Literal: "NX"},
+			{Kind: token.XX, Literal: "XX"},
 		},
 	}
 
@@ -67,7 +85,7 @@ func TestCommandTokenized(t *testing.T) {
 		cur := l.NextToken()
 
 		if cur.Kind != tok.Kind {
-			t.Errorf("tok kind expected=%d. got=%d", tok.Kind, cur.Kind)
+			t.Errorf("tok kind expected=%d. got=%d (%s)", tok.Kind, cur.Kind, cur.Literal)
 		}
 
 		if cur.Literal != tok.Literal {
