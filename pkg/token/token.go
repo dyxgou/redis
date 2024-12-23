@@ -24,6 +24,9 @@ const (
 	MGET
 	MSET
 	APPEND
+	EXISTS
+	STRLEN
+	SUBSTR
 
 	// CONFIG
 	CONFIG
@@ -72,11 +75,11 @@ func New(kind TokenKind, literal string) Token {
 }
 
 var keywords = map[string]TokenKind{
-	"SET":    SET,
 	"GET":    GET,
-	"GETDEL": GETDEL,
 	"GETSET": GETSET,
 	"GETEX":  GETEX,
+	"GETDEL": GETDEL,
+	"SET":    SET,
 	"INCR":   INCR,
 	"INCRBY": INCRBY,
 	"DECR":   DECR,
@@ -84,6 +87,9 @@ var keywords = map[string]TokenKind{
 	"MGET":   MGET,
 	"MSET":   MSET,
 	"APPEND": APPEND,
+	"EXISTS": EXISTS,
+	"STRLEN": STRLEN,
+	"SUBSTR": SUBSTR,
 	"XX":     XX,
 	"NX":     NX,
 	"EX":     EX,
