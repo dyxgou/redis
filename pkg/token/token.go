@@ -11,10 +11,12 @@ const (
 	IDENT
 
 	// String operations
+	keyword_beg
 	SET
-	SETNX
 	GET
 	GETSET
+	GETDEL
+	GETEX
 	INCR
 	INCRBY
 	DECR
@@ -25,8 +27,16 @@ const (
 
 	// CONFIG
 	CONFIG
+	keyword_end
+
+	args_beg
+	XX
+	NX
+	EX
+	args_end
 
 	// STRINGS
+	types_beg
 	STRING
 	BULKSTRING
 	VERTAMINSTRING
@@ -46,6 +56,7 @@ const (
 	ATTRIBUTES
 	SETS
 	PUSHES
+	types_end
 )
 
 type Token struct {
@@ -62,9 +73,10 @@ func New(kind TokenKind, literal string) Token {
 
 var keywords = map[string]TokenKind{
 	"SET":    SET,
-	"SETNX":  SETNX,
 	"GET":    GET,
+	"GETDEL": GETDEL,
 	"GETSET": GETSET,
+	"GETEX":  GETEX,
 	"INCR":   INCR,
 	"INCRBY": INCRBY,
 	"DECR":   DECR,
@@ -72,6 +84,9 @@ var keywords = map[string]TokenKind{
 	"MGET":   MGET,
 	"MSET":   MSET,
 	"APPEND": APPEND,
+	"XX":     XX,
+	"NX":     NX,
+	"EX":     EX,
 }
 
 func LookupIdent(ident string) TokenKind {

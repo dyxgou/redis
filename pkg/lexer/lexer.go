@@ -1,3 +1,4 @@
+// Package lexer sends a Stream
 package lexer
 
 import (
@@ -31,10 +32,16 @@ func (l *Lexer) next() {
 	l.readPosition++
 }
 
+// NextToken() provides a stream of tokens from the input given to the lexer
 func (l *Lexer) NextToken() token.Token {
 	l.skipWhitespace()
 
 	switch l.ch {
+	case '\r':
+		if ch := l.peekChar(); ch == '\n' {
+			return token.New(token.CRLF, "\r\n")
+		}
+		break
 	case '+':
 		return token.New(token.STRING, string(l.ch))
 	case '-':
@@ -111,18 +118,31 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[pos:l.position]
 }
 
-func (l *Lexer) readNumber() (string, error) {
+func (l *Lexer) readNumber() (string, bool, error) {
 	pos := l.position
+	var isFloat bool
 
 	for isDigit(l.ch) {
+		if l.ch == '.' {
+			isFloat = true
+		}
+
 		l.next()
 	}
 
 	number := l.input[pos:l.position]
 
 	if l.input[l.position-1] == '.' {
-		return number, fmt.Errorf("un expected '.' at the end of the number.")
+		return number, isFloat, fmt.Errorf("unexpected '.' at the end of the number.")
 	}
 
-	return number, nil
+	return number, isFloat, nil
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.readPosition > len(l.input) {
+		return byte(token.EOF)
+	}
+
+	return l.input[l.readPosition]
 }

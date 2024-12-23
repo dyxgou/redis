@@ -15,6 +15,7 @@ func TestInputToken(t *testing.T) {
 		{":", token.New(token.INTEGER, ":")},
 		{"GET", token.New(token.GET, "GET")},
 		{"GETSET", token.New(token.GETSET, "GETSET")},
+		{"GETDEL", token.New(token.GETDEL, "GETDEL")},
 		{"SET", token.New(token.SET, "SET")},
 	}
 
