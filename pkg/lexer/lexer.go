@@ -80,8 +80,14 @@ func (l *Lexer) NextToken() token.Token {
 		t.Literal = l.readIdentifier()
 		t.Kind = token.LookupIdent(t.Literal)
 	} else if isDigit(l.ch) {
-		literal, err := l.readNumber()
+		literal, isFloat, err := l.readNumber()
 		t.Literal = literal
+
+		if isFloat {
+			t.Kind = token.FLOAT
+		} else {
+			t.Kind = token.INTEGER
+		}
 
 		if err != nil {
 			t.Kind = token.ILEGAL
@@ -99,7 +105,7 @@ func isLetter(ch byte) bool {
 }
 
 func isDigit(ch byte) bool {
-	return (ch >= '1' && ch <= '9') || ch == '.'
+	return (ch >= '0' && ch <= '9') || ch == '.'
 }
 
 func (l *Lexer) skipWhitespace() {
@@ -118,6 +124,15 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[pos:l.position]
 }
 
+// readNumber reads the numeric characters [0-9] and '.' and advances the token till the numeric tokens ends.
+//
+// Returns:
+//
+//   - string: The number token.
+//
+//   - bool: Is true if the numeric token is a float, is false if it is an integer.
+//
+//   - error: An error if the last char of the number is a dot, as it is an invalid token.
 func (l *Lexer) readNumber() (string, bool, error) {
 	pos := l.position
 	var isFloat bool
