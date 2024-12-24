@@ -56,8 +56,8 @@ func TestIlegalToken(t *testing.T) {
 	for l.ch != byte(token.EOF) {
 		tok := l.NextToken()
 
-		if tok.Kind != token.ILEGAL {
-			t.Errorf("token kind ILEGAL expected=%d, got=%d (%s)", token.ILEGAL, tok.Kind, tok.Literal)
+		if tok.Kind != token.ILLEGAL {
+			t.Errorf("token kind ILLEGAL expected=%d, got=%d (%s)", token.ILLEGAL, tok.Kind, tok.Literal)
 		}
 	}
 }

@@ -37,6 +37,8 @@ func (l *Lexer) NextToken() token.Token {
 	l.skipWhitespace()
 
 	switch l.ch {
+	case byte(token.EOF):
+		return token.New(token.EOF, string(l.ch))
 	case '\r':
 		if ch := l.peekChar(); ch == '\n' {
 			return token.New(token.CRLF, "\r\n")
@@ -90,10 +92,10 @@ func (l *Lexer) NextToken() token.Token {
 		}
 
 		if err != nil {
-			t.Kind = token.ILEGAL
+			t.Kind = token.ILLEGAL
 		}
 	} else {
-		t = token.New(token.ILEGAL, string(l.ch))
+		t = token.New(token.ILLEGAL, string(l.ch))
 	}
 
 	l.next()
