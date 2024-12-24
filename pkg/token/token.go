@@ -3,15 +3,15 @@ package token
 type TokenKind byte
 
 const (
-	ILEGAL TokenKind = iota
-	EOF
+	EOF TokenKind = iota
+	ILLEGAL
 
 	// Special
 	CRLF
-	IDENT
 
 	// String operations
 	keyword_beg
+	IDENT
 	SET
 	GET
 	GETSET
@@ -93,6 +93,14 @@ var keywords = map[string]TokenKind{
 	"XX":     XX,
 	"NX":     NX,
 	"EX":     EX,
+}
+
+func IsKeyword(kind TokenKind) bool {
+	return keyword_beg < kind && kind < keyword_end
+}
+
+func IsType(kind TokenKind) bool {
+	return types_beg < kind && kind < types_end
 }
 
 func LookupIdent(ident string) TokenKind {
