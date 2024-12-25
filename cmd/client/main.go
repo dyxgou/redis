@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github/dyxgou/redis/pkg/lexer"
+	"github/dyxgou/redis/pkg/serializer"
 	"log"
 	"net"
 	"os"
@@ -30,10 +32,30 @@ func main() {
 
 		text := scanner.Text()
 
-		_, err := conn.Write([]byte(text))
+		serialized, err := serialize(text)
+
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		_, err = conn.Write([]byte(serialized))
 
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
+}
+
+func serialize(text string) (string, error) {
+	l := lexer.New(text)
+	s := serializer.New(l)
+
+	serialized, err := s.Serialize()
+
+	if err != nil {
+		return "", err
+	}
+
+	return serialized, nil
 }
