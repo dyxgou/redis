@@ -5,32 +5,58 @@ import (
 	"testing"
 )
 
-func TestInputToken(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected token.Token
+func FuzzNextChar(f *testing.F) {
+	f.Add("*1\r\n$3\r\nGET\r\n")
+
+	f.Fuzz(func(t *testing.T, a string) {
+		l := New(a)
+
+		for i := 0; i < len(a); i++ {
+			ch := a[i]
+			if l.ch != ch {
+				t.Errorf("l.ch expected=%q. got=%q", l.ch, ch)
+			}
+
+			l.next()
+		}
+	})
+}
+
+func TestTokenizeCRLF(t *testing.T) {
+	tt := struct {
+		input         string
+		expectedToken token.Token
 	}{
-		{"+", token.New(token.STRING, "+")},
-		{"-", token.New(token.ERROR, "-")},
-		{":", token.New(token.INTEGER, ":")},
-		{"GET", token.New(token.GET, "GET")},
-		{"GETSET", token.New(token.GETSET, "GETSET")},
-		{"GETEX", token.New(token.GETEX, "GETEX")},
-		{"GETDEL", token.New(token.GETDEL, "GETDEL")},
-		{"SET", token.New(token.SET, "SET")},
-		{"INCR", token.New(token.INCR, "INCR")},
-		{"INCRBY", token.New(token.INCRBY, "INCRBY")},
-		{"DECR", token.New(token.DECR, "DECR")},
-		{"DECRBY", token.New(token.DECRBY, "DECRBY")},
-		{"MGET", token.New(token.MGET, "MGET")},
-		{"MSET", token.New(token.MSET, "MSET")},
-		{"APPEND", token.New(token.APPEND, "APPEND")},
-		{"EXISTS", token.New(token.EXISTS, "EXISTS")},
-		{"STRLEN", token.New(token.STRLEN, "STRLEN")},
-		{"SUBSTR", token.New(token.SUBSTR, "SUBSTR")},
-		{"XX", token.New(token.XX, "XX")},
-		{"NX", token.New(token.NX, "NX")},
-		{"EX", token.New(token.EX, "EX")},
+		input:         "\r\n",
+		expectedToken: token.New(token.CRLF, token.EndCRLF),
+	}
+
+	l := New(tt.input)
+
+	tok := l.NextToken()
+
+	if tok.Kind != tt.expectedToken.Kind {
+		t.Errorf(
+			"token kind expected=%d. got=%d (%q)", tt.expectedToken.Kind, tok.Kind, tok.Literal,
+		)
+	}
+
+	if tok.Literal != tt.expectedToken.Literal {
+		t.Errorf(
+			"token literal expected=%q. got=%q", tt.expectedToken.Literal, tok.Literal,
+		)
+	}
+}
+
+func TestTokenizeNumber(t *testing.T) {
+	tests := []struct {
+		input         string
+		expectedToken token.Token
+	}{
+		{"123123", token.New(token.INTEGER, "123123")},
+		{"312", token.New(token.INTEGER, "312")},
+		{"312.123", token.New(token.FLOAT, "312.123")},
+		{"312.", token.New(token.ILLEGAL, "")},
 	}
 
 	for _, tt := range tests {
@@ -38,58 +64,63 @@ func TestInputToken(t *testing.T) {
 
 		tok := l.NextToken()
 
-		if tok.Literal != tt.expected.Literal {
-			t.Errorf("tok literal expected=%s. got=%s", tt.expected.Literal, tok.Literal)
+		if tok.Kind != tt.expectedToken.Kind {
+			t.Errorf(
+				"token kind expected=%d. got=%d (%q)", tt.expectedToken.Kind, tok.Kind, tok.Literal,
+			)
 		}
 
-		if tok.Kind != tt.expected.Kind {
-			t.Errorf("tok kind expected=%d. got=%d", tt.expected.Kind, tok.Kind)
-		}
-	}
-}
-
-func TestIlegalToken(t *testing.T) {
-	input := "@^&)'"
-
-	l := New(input)
-
-	for l.ch != byte(token.EOF) {
-		tok := l.NextToken()
-
-		if tok.Kind != token.ILLEGAL {
-			t.Errorf("token kind ILLEGAL expected=%d, got=%d (%s)", token.ILLEGAL, tok.Kind, tok.Literal)
+		if tok.Literal != tt.expectedToken.Literal {
+			t.Errorf(
+				"token literal expected=%q. got=%q", tt.expectedToken.Literal, tok.Literal,
+			)
 		}
 	}
 }
 
-func TestCommandTokenized(t *testing.T) {
-	test := struct {
+func TestNextToken(t *testing.T) {
+	tests := []struct {
 		input          string
 		expectedTokens []token.Token
 	}{
-		input: "SET my_key my_value EX 20 NX XX",
-		expectedTokens: []token.Token{
-			{Kind: token.SET, Literal: "SET"},
-			{Kind: token.IDENT, Literal: "my_key"},
-			{Kind: token.IDENT, Literal: "my_value"},
-			{Kind: token.EX, Literal: "EX"},
-			{Kind: token.INTEGER, Literal: "20"},
-			{Kind: token.NX, Literal: "NX"},
-			{Kind: token.XX, Literal: "XX"},
+		{
+			input: "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n",
+			expectedTokens: []token.Token{
+				token.New(token.ARRAY, "*"),
+				token.New(token.INTEGER, "2"),
+				token.New(token.CRLF, token.EndCRLF),
+				token.New(token.BULKSTRING, "$"),
+				token.New(token.INTEGER, "3"),
+				token.New(token.CRLF, token.EndCRLF),
+				token.New(token.GET, "GET"),
+				token.New(token.CRLF, token.EndCRLF),
+				token.New(token.BULKSTRING, "$"),
+				token.New(token.INTEGER, "3"),
+				token.New(token.CRLF, token.EndCRLF),
+				token.New(token.IDENT, "key"),
+				token.New(token.CRLF, token.EndCRLF),
+				token.New(token.BULKSTRING, "$"),
+				token.New(token.INTEGER, "5"),
+				token.New(token.CRLF, token.EndCRLF),
+				token.New(token.IDENT, "value"),
+				token.New(token.CRLF, token.EndCRLF),
+			},
 		},
 	}
 
-	l := New(test.input)
+	for _, tt := range tests {
+		l := New(tt.input)
 
-	for _, tok := range test.expectedTokens {
-		cur := l.NextToken()
+		for _, expTok := range tt.expectedTokens {
+			tok := l.NextToken()
 
-		if cur.Kind != tok.Kind {
-			t.Errorf("tok kind expected=%d. got=%d (%s)", tok.Kind, cur.Kind, cur.Literal)
-		}
+			if tok.Kind != expTok.Kind {
+				t.Errorf("token kind expected=%d. got=%d (%q)", expTok.Kind, tok.Kind, tok.Literal)
+			}
 
-		if cur.Literal != tok.Literal {
-			t.Errorf("tok literal expected=%s. got=%s", tok.Literal, cur.Literal)
+			if tok.Literal != expTok.Literal {
+				t.Errorf("token literal expected=%q. got=%q", expTok.Literal, tok.Literal)
+			}
 		}
 	}
 }
