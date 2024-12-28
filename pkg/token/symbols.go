@@ -2,7 +2,7 @@ package token
 
 const EndCRLF = "\r\n"
 
-var Symbols = map[TokenKind]byte{
+var symbols = map[TokenKind]byte{
 	STRING:         '+',
 	BULKSTRING:     '$',
 	VERTAMINSTRING: '=',
@@ -18,4 +18,34 @@ var Symbols = map[TokenKind]byte{
 	ATTRIBUTES:     '`',
 	SETS:           '~',
 	PUSHES:         '>',
+}
+
+var chars = map[byte]TokenKind{
+	'+': STRING,
+	'$': BULKSTRING,
+	'=': VERTAMINSTRING,
+	'-': ERROR,
+	'!': BULKERROR,
+	':': INTEGER,
+	',': FLOAT,
+	'(': BIGNUMBER,
+	'#': BOOLEAN,
+	'*': ARRAY,
+	'_': NULL,
+	'%': MAPS,
+	'`': ATTRIBUTES,
+	'~': SETS,
+	'>': PUSHES,
+}
+
+func GetKindWithSymbol(ch byte) (TokenKind, bool) {
+	k, ok := chars[ch]
+
+	return k, ok
+}
+
+func GetSymbolWithKind(kind TokenKind) (byte, bool) {
+	sym, ok := symbols[kind]
+
+	return sym, ok
 }

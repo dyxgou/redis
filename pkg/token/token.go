@@ -8,6 +8,7 @@ const (
 
 	// Special
 	CRLF
+	TEXT
 
 	// String operations
 	keyword_beg
@@ -39,7 +40,6 @@ const (
 	args_end
 
 	// STRINGS
-	types_beg
 	STRING
 	BULKSTRING
 	VERTAMINSTRING
@@ -59,7 +59,6 @@ const (
 	ATTRIBUTES
 	SETS
 	PUSHES
-	types_end
 )
 
 type Token struct {
@@ -99,8 +98,12 @@ func IsKeyword(kind TokenKind) bool {
 	return keyword_beg < kind && kind < keyword_end
 }
 
-func IsType(kind TokenKind) bool {
-	return types_beg < kind && kind < types_end
+func IsArg(kind TokenKind) bool {
+	return args_beg < kind && kind < args_end
+}
+
+func IsNumber(kind TokenKind) bool {
+	return kind == INTEGER || kind == FLOAT
 }
 
 func LookupIdent(ident string) TokenKind {
