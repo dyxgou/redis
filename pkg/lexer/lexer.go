@@ -34,8 +34,11 @@ func (l *Lexer) next() {
 }
 
 func (l *Lexer) NextToken() token.Token {
-	l.skipWhitespaces()
+	if l.ch == byte(token.EOF) {
+		return token.New(token.EOF, "")
+	}
 
+	l.skipWhitespaces()
 	if l.ch == '\r' && l.peekChar() == '\n' {
 		l.next()
 		return token.New(token.CRLF, token.EndCRLF)
@@ -93,7 +96,9 @@ func (l *Lexer) readIdent() string {
 		l.next()
 	}
 
-	return l.input[pos:l.pos]
+	offset := l.getReadOffset()
+
+	return l.input[pos : l.pos+offset]
 }
 
 func (l *Lexer) readNumber() (string, bool, error) {
@@ -101,7 +106,6 @@ func (l *Lexer) readNumber() (string, bool, error) {
 	var isFloat bool
 
 	for isDigit(l.ch) {
-		slog.Info("digit", "ch", string(l.ch))
 		if l.ch == '.' {
 			isFloat = true
 		}
@@ -109,13 +113,9 @@ func (l *Lexer) readNumber() (string, bool, error) {
 		l.next()
 	}
 
-	var offset int
-	if l.pos == len(l.input)-1 {
-		offset = 1
-	}
+	offset := l.getReadOffset()
 
 	number := l.input[pos : l.pos+offset]
-	slog.Info("num", "num", number)
 
 	if number[len(number)-1] == '.' {
 		return "", false, fmt.Errorf("number invalid. last char cannot be '.'")
@@ -136,4 +136,13 @@ func (l *Lexer) skipWhitespaces() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' {
 		l.next()
 	}
+}
+
+// getReadOffset checks if thue current possition is equal to the String input, if so, it returns the offset of 1 to
+func (l *Lexer) getReadOffset() int {
+	if l.pos == len(l.input)-1 {
+		return 1
+	}
+
+	return 0
 }
