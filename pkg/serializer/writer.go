@@ -7,77 +7,84 @@ import (
 	"strconv"
 )
 
-// headSize represents the size of the array beggining of any command like "$NUM\r\n"
-const headSize = 6
-
 type writer struct {
-	len int
-	sb  *bytes.Buffer
-
 	head *bytes.Buffer
+	body *bytes.Buffer
+
+	len int
 }
 
 func newWriter() *writer {
 	return &writer{
-		len: 0,
-		sb:  new(bytes.Buffer),
-
 		head: new(bytes.Buffer),
+		body: new(bytes.Buffer),
 	}
-}
-
-func (w *writer) writeLen() {
-	if w.len == 0 {
-		return
-	}
-
-	symbol := token.Symbols[token.ARRAY]
-
-	w.head.WriteByte(symbol)
-	w.head.WriteString(strconv.Itoa(w.len))
 }
 
 func (w *writer) writeCRLF() {
-	w.sb.WriteString("\r\n")
+	w.body.WriteString(token.EndCRLF)
 }
 
-func (w *writer) writeSymbol(kind token.TokenKind, n int) error {
-	symbol, ok := token.Symbols[kind]
+func (w *writer) writeSymbol(k token.TokenKind) error {
+	sym, ok := token.GetSymbolWithKind(k)
 
 	if !ok {
-		return fmt.Errorf("symbol not found for kind=%d", kind)
+		return fmt.Errorf("not symbol found. token=%d", k)
 	}
 
-	w.sb.WriteByte(symbol)
-	w.sb.WriteString(strconv.Itoa(n))
+	w.body.WriteByte(sym)
+	return nil
+}
 
+func (w *writer) writeSymbolWithAmount(k token.TokenKind, n int) error {
+	err := w.writeSymbol(k)
+
+	if err != nil {
+		return err
+	}
+
+	w.body.WriteString(strconv.Itoa(n))
 	w.writeCRLF()
 
 	return nil
 }
 
-func (w *writer) writeKeyword(kw token.Token) error {
-	n := len(kw.Literal)
-
-	if err := w.writeSymbol(token.BULKSTRING, n); err != nil {
+func (w *writer) writeWord(t token.Token) error {
+	if err := w.writeSymbolWithAmount(token.BULKSTRING, len(t.Literal)); err != nil {
 		return err
 	}
-	w.sb.WriteString(kw.Literal)
 
+	w.body.WriteString(t.Literal)
 	w.writeCRLF()
-
 	w.len++
 
 	return nil
 }
 
-func (w *writer) string() string {
-	symbol := token.Symbols[token.ARRAY]
-	w.head.WriteByte(symbol)
-	w.head.WriteString(strconv.Itoa(w.len))
-	w.head.WriteString("\r\n")
+func (w *writer) writeNumber(t token.Token) error {
+	if err := w.writeSymbol(t.Kind); err != nil {
+		return err
+	}
 
-	w.head.Write(w.sb.Bytes())
+	w.body.WriteString(t.Literal)
+	w.writeCRLF()
+	w.len++
+
+	return nil
+}
+
+func (w *writer) writeLen() {
+	sym, _ := token.GetSymbolWithKind(token.ARRAY)
+
+	w.head.WriteByte(sym)
+	w.head.WriteString(strconv.Itoa(w.len))
+	w.head.WriteString(token.EndCRLF)
+}
+
+func (w *writer) string() string {
+	w.writeLen()
+
+	w.head.Write(w.body.Bytes())
 
 	return w.head.String()
 }
