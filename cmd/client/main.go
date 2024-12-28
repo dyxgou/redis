@@ -34,6 +34,7 @@ func main() {
 		serialized, err := serialize(text)
 
 		if err != nil {
+			fmt.Print("\t")
 			fmt.Println(err)
 			continue
 		}
