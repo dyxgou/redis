@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github/dyxgou/redis/pkg/lexer"
 	"github/dyxgou/redis/pkg/serializer"
 	"log"
 	"net"
@@ -48,8 +47,7 @@ func main() {
 }
 
 func serialize(text string) (string, error) {
-	l := lexer.New(text)
-	s := serializer.New(l)
+	s := serializer.New(text)
 
 	serialized, err := s.Serialize()
 
