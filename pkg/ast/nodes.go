@@ -2,14 +2,16 @@ package ast
 
 import (
 	"github/dyxgou/redis/pkg/token"
+	"strconv"
+	"strings"
 	"time"
 )
 
 type (
 	// A GetCommand represents the command "GET <key>"
 	GetCommand struct {
-		token token.Token
-		key   string
+		Token token.Token
+		Key   string
 	}
 
 	// A GetSetCommand represents the "GETSET <key> <value>" and acts like a SET followed by a GET
@@ -35,10 +37,10 @@ type (
 
 	// A SetCommand represents the command "SET <key> <value>" if Ex is not provided it is assumed that the key won't be expired
 	SetCommand struct {
-		token token.Token
-		key   string
-		value string
-		Ex    time.Duration
+		Token token.Token
+		Key   string
+		Value string
+		Ex    int
 
 		// Sets the key if not exists
 		Nx bool
@@ -100,3 +102,56 @@ type (
 		key   string
 	}
 )
+
+func (gc *GetCommand) cmdNode()             {}
+func (gc *GetCommand) TokenLiteral() string { return gc.Token.Literal }
+func (gc *GetCommand) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(gc.Token.Literal)
+	sb.WriteByte(' ')
+
+	sb.WriteString(gc.Key)
+
+	return sb.String()
+}
+
+func (sc *SetCommand) cmdNode()             {}
+func (sc *SetCommand) TokenLiteral() string { return sc.Token.Literal }
+func (sc *SetCommand) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(sc.Token.Literal)
+	sb.WriteByte(' ')
+
+	sb.WriteString(sc.Key)
+	sb.WriteByte(' ')
+
+	sb.WriteString(sc.Value)
+	sb.WriteByte(' ')
+
+	writeNumArg(&sb, "Ex", sc.Ex)
+	writeBoolArg(&sb, "NX", sc.Nx)
+	writeBoolArg(&sb, "XX", sc.Xx)
+
+	return sb.String()
+}
+
+func writeNumArg(sb *strings.Builder, arg string, n int) {
+	if n == 0 {
+		return
+	}
+
+	sb.WriteString(arg)
+	sb.WriteString(strconv.Itoa(n))
+	sb.WriteByte(' ')
+}
+
+func writeBoolArg(sb *strings.Builder, arg string, val bool) {
+	if !val {
+		return
+	}
+
+	sb.WriteString(arg)
+	sb.WriteByte(' ')
+}
