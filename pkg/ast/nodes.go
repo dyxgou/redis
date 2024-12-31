@@ -137,6 +137,52 @@ func (sc *SetCommand) String() string {
 	return sb.String()
 }
 
+type (
+	BooleanExpr struct {
+		Token token.Token
+		Value bool
+	}
+
+	StringExpr struct {
+		Token token.Token
+	}
+
+	IntegerExpr struct {
+		Token token.Token
+		Value int
+	}
+
+	BigIntegerExpr struct {
+		Token token.Token
+		Value int64
+	}
+
+	FloatExpr struct {
+		Token token.Token
+		Value float64
+	}
+)
+
+func (be *BooleanExpr) exprNode()    {}
+func (se *StringExpr) exprNode()     {}
+func (ie *IntegerExpr) exprNode()    {}
+func (bi *BigIntegerExpr) exprNode() {}
+func (fo *FloatExpr) exprNode()      {}
+
+func (be *BooleanExpr) TokenLiteral() string    { return be.Token.Literal }
+func (se *StringExpr) TokenLiteral() string     { return se.Token.Literal }
+func (ie *IntegerExpr) TokenLiteral() string    { return ie.Token.Literal }
+func (bi *BigIntegerExpr) TokenLiteral() string { return bi.Token.Literal }
+func (fo *FloatExpr) TokenLiteral() string      { return fo.Token.Literal }
+
+func (be *BooleanExpr) String() string    { return be.Token.Literal }
+func (se *StringExpr) String() string     { return se.Token.Literal }
+func (ie *IntegerExpr) String() string    { return ie.Token.Literal }
+func (bi *BigIntegerExpr) String() string { return bi.Token.Literal }
+func (fo *FloatExpr) String() string      { return fo.Token.Literal }
+
+func (se *StringExpr) Value() string { return se.Token.Literal }
+
 func writeNumArg(sb *strings.Builder, arg string, n int) {
 	if n == 0 {
 		return
