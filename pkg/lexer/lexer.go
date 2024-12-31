@@ -78,7 +78,11 @@ func (l *Lexer) NextToken() token.Token {
 		if isFloat {
 			t.Kind = token.FLOAT
 		} else {
-			t.Kind = token.INTEGER
+			if len(num) > 10 {
+				t.Kind = token.BIGNUMBER
+			} else {
+				t.Kind = token.INTEGER
+			}
 		}
 
 		t.Literal = num
@@ -157,10 +161,7 @@ func (l *Lexer) getReadOffset() int {
 }
 
 func (l *Lexer) readString() string {
-	slog.Info("read string called")
-	slog.Info("input", "i", l.input)
 	pos := l.pos + 1
-	slog.Info("pos", "p", pos)
 
 	for l.ch != byte(token.EOF) {
 		l.next()
@@ -169,7 +170,6 @@ func (l *Lexer) readString() string {
 			break
 		}
 	}
-	slog.Info("lpos", "l", l.pos)
 
 	return l.input[pos:l.pos]
 }
