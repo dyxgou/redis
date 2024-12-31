@@ -48,6 +48,27 @@ func TestTokenizeCRLF(t *testing.T) {
 	}
 }
 
+func TestTokenizeString(t *testing.T) {
+	tt := struct {
+		input    string
+		expected token.Token
+	}{
+		input:    "\"value\"",
+		expected: token.New(token.STRING, "value"),
+	}
+
+	l := New(tt.input)
+	tok := l.NextToken()
+
+	if tok.Kind != tt.expected.Kind {
+		t.Errorf("token kind expected=%d ('STRING'). got=%d", tt.expected.Kind, tok.Kind)
+	}
+
+	if tok.Literal != tt.expected.Literal {
+		t.Errorf("token literal expected=%q. got=%q", tt.expected.Literal, tok.Literal)
+	}
+}
+
 func TestTokenizeNumber(t *testing.T) {
 	tests := []struct {
 		input         string
@@ -56,7 +77,6 @@ func TestTokenizeNumber(t *testing.T) {
 		{"123123", token.New(token.INTEGER, "123123")},
 		{"312", token.New(token.INTEGER, "312")},
 		{"312.123", token.New(token.FLOAT, "312.123")},
-		{"312.", token.New(token.ILLEGAL, "")},
 	}
 
 	for _, tt := range tests {

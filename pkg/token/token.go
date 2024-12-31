@@ -40,21 +40,23 @@ const (
 	args_end
 
 	// STRINGS
-	STRING
 	BULKSTRING
 	VERTAMINSTRING
 	ERROR
 	BULKERROR
 
-	// INTEGERS
-	INTEGER
-	FLOAT
+	// VALUES
+	values_beg
 	BIGNUMBER
+	INTEGER
+	STRING
+	FLOAT
+	BOOLEAN
+	NULL
+	values_end
 
 	// DATA
-	BOOLEAN
 	ARRAY
-	NULL
 	MAPS
 	ATTRIBUTES
 	SETS
@@ -100,6 +102,10 @@ func IsKeyword(kind TokenKind) bool {
 
 func IsArg(kind TokenKind) bool {
 	return args_beg < kind && kind < args_end
+}
+
+func IsValue(kind TokenKind) bool {
+	return values_beg < kind && kind < args_end
 }
 
 func IsNumber(kind TokenKind) bool {

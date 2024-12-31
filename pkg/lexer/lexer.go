@@ -6,6 +6,8 @@ import (
 	"log/slog"
 )
 
+const qoute = '"'
+
 type Lexer struct {
 	input   string
 	pos     int
@@ -51,6 +53,13 @@ func (l *Lexer) NextToken() token.Token {
 	}
 
 	var t token.Token
+
+	if l.ch == qoute {
+		t.Kind = token.STRING
+		t.Literal = l.readString()
+		l.next()
+		return t
+	}
 
 	if isLetter(l.ch) {
 		t.Literal = l.readIdent()
@@ -145,4 +154,22 @@ func (l *Lexer) getReadOffset() int {
 	}
 
 	return 0
+}
+
+func (l *Lexer) readString() string {
+	slog.Info("read string called")
+	slog.Info("input", "i", l.input)
+	pos := l.pos + 1
+	slog.Info("pos", "p", pos)
+
+	for l.ch != byte(token.EOF) {
+		l.next()
+
+		if l.ch == qoute {
+			break
+		}
+	}
+	slog.Info("lpos", "l", l.pos)
+
+	return l.input[pos:l.pos]
 }
