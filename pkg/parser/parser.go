@@ -9,7 +9,10 @@ import (
 	"strconv"
 )
 
-const setMinArgs int = 3
+const trueStr = "t"
+const falseStr = "f"
+
+var errNilPtr = errors.New("destination pointer is nil")
 
 type Parser struct {
 	l *lexer.Lexer
@@ -17,11 +20,11 @@ type Parser struct {
 	curTok  token.Token
 	readTok token.Token
 
-	maxLen int
+	len int
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l, maxLen: 100}
+	p := &Parser{l: l, len: 100}
 	p.next()
 	p.next()
 
@@ -38,33 +41,28 @@ func (p *Parser) done() bool {
 }
 
 func (p *Parser) Parse() (ast.Command, error) {
-	var n int
-	for !p.done() && n < p.maxLen {
-		if err := p.parseBegCommand(); err != nil {
-			return nil, err
-		}
-
-		if err := p.skipBulkString(); err != nil {
-			return nil, err
-		}
-
-		cmd, err := p.parseCommand()
-		if err != nil {
-			return nil, err
-		}
-
-		return cmd, nil
+	if err := p.parseBegCommand(); err != nil {
+		return nil, err
 	}
 
-	return nil, errors.New("could not parse input")
+	if err := p.skipBulkString(); err != nil {
+		return nil, err
+	}
+
+	cmd, err := p.parseCommand()
+	if err != nil {
+		return nil, err
+	}
+
+	return cmd, nil
 }
 
 func (p *Parser) parseCommand() (ast.Command, error) {
 	switch p.curTok.Kind {
 	case token.GET:
 		return p.parseGetCommand()
-	case token.SET:
-		return p.parseSetCommand()
+		// case token.SET:
+		// 	return p.parseSetCommand()
 	}
 
 	return nil, fmt.Errorf("command not supported. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
@@ -85,15 +83,6 @@ func (p *Parser) skipBulkString() error {
 		return err
 	}
 
-	if !p.curTokIs(token.IDENT) {
-		return fmt.Errorf(
-			"token expected=%d ('IDENT'). got=%d (%s)",
-			token.IDENT,
-			p.curTok.Kind,
-			p.curTok.Literal,
-		)
-	}
-
 	return nil
 }
 
@@ -111,7 +100,7 @@ func (p *Parser) parseBegCommand() error {
 	if err != nil {
 		return err
 	}
-	p.maxLen = n
+	p.len = n
 
 	p.next()
 
@@ -148,43 +137,14 @@ func (p *Parser) parseGetCommand() (*ast.GetCommand, error) {
 		return nil, err
 	}
 
-	if err := p.skipBulkString(); err != nil {
+	key, err := p.parseIdent()
+	if err != nil {
 		return nil, err
 	}
 
-	getCmd.Key = p.curTok.Literal
+	getCmd.Key = key
 
 	return getCmd, nil
-}
-
-func (p *Parser) parseSetCommand() (*ast.SetCommand, error) {
-	setCmd := &ast.SetCommand{Token: p.curTok}
-
-	p.next()
-	if err := p.checkCRLF(); err != nil {
-		return nil, err
-	}
-
-	if err := p.skipBulkString(); err != nil {
-		return nil, err
-	}
-
-	setCmd.Key = p.curTok.Literal
-
-	if err := p.checkCRLF(); err != nil {
-		return nil, err
-	}
-	if err := p.skipBulkString(); err != nil {
-		return nil, err
-	}
-
-	setCmd.Value = p.curTok.Literal
-
-	if p.maxLen == setMinArgs {
-		return setCmd, nil
-	}
-
-	return setCmd, nil
 }
 
 func (p *Parser) isNotArrayErr() error {
@@ -212,4 +172,103 @@ func (p *Parser) isNotBulkStringErr() error {
 		p.curTok.Kind,
 		p.curTok.Literal,
 	)
+}
+
+func (p *Parser) isNotIdentErr() error {
+	return fmt.Errorf(
+		"token expected=%d ('IDENT'). got=%d (%q)",
+		token.IDENT,
+		p.curTok.Kind,
+		p.curTok.Literal,
+	)
+}
+
+func (p *Parser) parseIdent() (string, error) {
+	if err := p.skipBulkString(); err != nil {
+		return "", err
+	}
+
+	if !p.curTokIs(token.IDENT) {
+		return "", p.isNotIdentErr()
+	}
+
+	return p.curTok.Literal, nil
+}
+
+func (p *Parser) parseValue() (ast.Expression, error) {
+	switch p.curTok.Kind {
+	case token.BOOLEAN:
+		return p.parseBoolean()
+	case token.STRING:
+		return p.parseString()
+	case token.INTEGER:
+		return p.parseInteger()
+	case token.BIGNUMBER:
+		return p.parseBigInt()
+	case token.FLOAT:
+		return p.parseFloat()
+	}
+
+	return nil, fmt.Errorf("curTok is not a value. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
+}
+
+func (p *Parser) parseBoolean() (*ast.BooleanExpr, error) {
+	be := &ast.BooleanExpr{Token: p.curTok}
+	p.next()
+
+	if !p.curTokIs(token.IDENT) {
+		return nil, p.isNotIdentErr()
+	}
+
+	if p.curTok.Literal == trueStr {
+		be.Value = true
+	} else if p.curTok.Literal == falseStr {
+		be.Value = false
+	} else {
+		return nil, fmt.Errorf("curTok invalid expected='t' or 'f'. got=%q", p.curTok.Literal)
+	}
+
+	return be, nil
+}
+
+func (p *Parser) parseString() (*ast.StringExpr, error) {
+	se := &ast.StringExpr{Token: p.curTok}
+
+	return se, nil
+}
+
+func (p *Parser) parseInteger() (*ast.IntegerExpr, error) {
+	ie := &ast.IntegerExpr{Token: p.curTok}
+
+	v, err := strconv.Atoi(p.curTok.Literal)
+	if err != nil {
+		return nil, err
+	}
+
+	ie.Value = v
+
+	return ie, nil
+}
+
+func (p *Parser) parseBigInt() (*ast.BigIntegerExpr, error) {
+	bi := &ast.BigIntegerExpr{Token: p.curTok}
+
+	v, err := strconv.ParseInt(p.curTok.Literal, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	bi.Value = v
+	return bi, nil
+}
+
+func (p *Parser) parseFloat() (*ast.FloatExpr, error) {
+	fo := &ast.FloatExpr{Token: p.curTok}
+	v, err := strconv.ParseFloat(p.curTok.Literal, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	fo.Value = v
+	return fo, nil
 }
