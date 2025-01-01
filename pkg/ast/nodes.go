@@ -39,7 +39,7 @@ type (
 	SetCommand struct {
 		Token token.Token
 		Key   string
-		Value string
+		Value Expression
 		Ex    int
 
 		// Sets the key if not exists
