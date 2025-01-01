@@ -200,6 +200,7 @@ func (p *Parser) parseValue() (ast.Expression, error) {
 	case token.BOOLEAN:
 		return p.parseBoolean()
 	case token.STRING:
+	case token.BULKSTRING:
 		return p.parseString()
 	case token.INTEGER:
 		return p.parseInteger()
@@ -232,6 +233,9 @@ func (p *Parser) parseBoolean() (*ast.BooleanExpr, error) {
 }
 
 func (p *Parser) parseString() (*ast.StringExpr, error) {
+	if err := p.skipBulkString(); err != nil {
+		return nil, err
+	}
 	se := &ast.StringExpr{Token: p.curTok}
 
 	return se, nil
