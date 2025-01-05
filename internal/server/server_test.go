@@ -19,7 +19,7 @@ type TestSuite struct {
 }
 
 func NewTestSuite(c Config) *TestSuite {
-	s := NewServer(c)
+	s := New(c)
 
 	go s.Start()
 

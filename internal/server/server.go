@@ -25,7 +25,7 @@ type Server struct {
 	addPeerCh chan *Peer
 }
 
-func NewServer(cfg Config) *Server {
+func New(cfg Config) *Server {
 	return &Server{
 		Config:    cfg,
 		quitch:    make(chan os.Signal, 1),

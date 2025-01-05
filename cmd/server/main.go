@@ -9,7 +9,7 @@ import (
 func main() {
 	port := config.GetEnv("PORT")
 
-	server := server.NewServer(server.Config{ListenAddr: port})
+	server := server.New(server.Config{ListenAddr: port})
 
 	log.Fatal(server.Start())
 }
