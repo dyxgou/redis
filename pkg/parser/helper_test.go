@@ -30,7 +30,7 @@ func assertSetCommand(t *testing.T, cmd ast.Command, sc *ast.SetCommand) {
 		t.Errorf("setCmd key expected=%q. got=%q", sc.Key, setCmd.Key)
 	}
 
-	if setCmd.Value != sc.Value {
+	if setCmd.Value.String() != sc.Value.String() {
 		t.Errorf("setCmd value expected=%q. got=%q", sc.Value, setCmd.Value)
 	}
 
@@ -54,15 +54,15 @@ func assertBoolean(t *testing.T, expr ast.Expression, expected *ast.BooleanExpr)
 	}
 
 	if b.Token.Kind != expected.Token.Kind {
-		t.Errorf("boolExpr Kind expected=%d. got=%d", b.Token.Kind, expected.Token.Kind)
+		t.Errorf("boolExpr Kind expected=%d. got=%d", expected.Token.Kind, b.Token.Kind)
 	}
 
 	if b.Token.Literal != expected.Token.Literal {
-		t.Errorf("boolExpr Literal expected=%q. got=%q", b.Token.Literal, expected.Token.Literal)
+		t.Errorf("boolExpr Literal expected=%q. got=%q", expected.Token.Literal, b.Token.Literal)
 	}
 
 	if b.Value != expected.Value {
-		t.Errorf("boolExpr Value expected=%t. got=%t", b.Value, expected.Value)
+		t.Errorf("boolExpr Value expected=%t. got=%t", expected.Value, expected.Value)
 	}
 }
 
@@ -73,34 +73,34 @@ func assertString(t *testing.T, expr ast.Expression, expected *ast.StringExpr) {
 	}
 
 	if s.Token.Kind != expected.Token.Kind {
-		t.Errorf("strExpr Kind expected=%d. got=%d", s.Token.Kind, expected.Token.Kind)
+		t.Errorf("strExpr Kind expected=%d. got=%d", expected.Token.Kind, s.Token.Kind)
 	}
 
 	if s.Token.Literal != expected.Token.Literal {
-		t.Errorf("strExpr Literal expected=%q. got=%q", s.Token.Literal, expected.Token.Literal)
+		t.Errorf("strExpr Literal expected=%q. got=%q", expected.Token.Literal, s.Token.Literal)
 	}
 
 	if s.Value() != expected.Value() {
-		t.Errorf("strExpr Value() expected=%q. got=%q", s.Value(), expected.Value())
+		t.Errorf("strExpr Value() expected=%q. got=%q", expected.Value(), s.Value())
 	}
 }
 
-func assertInteger(t *testing.T, expr ast.Expression, expected *ast.IntegerExpr) {
-	i, ok := expr.(*ast.IntegerExpr)
+func assertInteger(t *testing.T, expr ast.Expression, expected *ast.IntegerLit) {
+	i, ok := expr.(*ast.IntegerLit)
 	if !ok {
 		t.Errorf("expr is not *ast.IntegerExpr. got=%T", expr)
 	}
 
 	if i.Token.Kind != expected.Token.Kind {
-		t.Errorf("intExpr Kind expected=%d. got=%d", i.Token.Kind, expected.Token.Kind)
+		t.Errorf("intExpr Kind expected=%d. got=%d", expected.Token.Kind, i.Token.Kind)
 	}
 
 	if i.Token.Literal != expected.Token.Literal {
-		t.Errorf("intExpr Literal expected=%q. got=%q", i.Token.Literal, expected.Token.Literal)
+		t.Errorf("intExpr Literal expected=%q. got=%q", expected.Token.Literal, i.Token.Literal)
 	}
 
 	if i.Value != expected.Value {
-		t.Errorf("intExpr Value expected=%d. got=%d", i.Value, expected.Value)
+		t.Errorf("intExpr Value expected=%d. got=%d", expected.Value, i.Value)
 	}
 }
 
@@ -112,15 +112,15 @@ func assertBigInt(t *testing.T, expr ast.Expression, expected *ast.BigIntegerExp
 	}
 
 	if bi.Token.Kind != expected.Token.Kind {
-		t.Errorf("bigIntExpr Kind expected=%d. got=%d", bi.Token.Kind, expected.Token.Kind)
+		t.Errorf("bigIntExpr Kind expected=%d. got=%d", expected.Token.Kind, bi.Token.Kind)
 	}
 
 	if bi.Token.Literal != expected.Token.Literal {
-		t.Errorf("bigIntExpr Literal expected=%q. got=%q", bi.Token.Literal, expected.Token.Literal)
+		t.Errorf("bigIntExpr Literal expected=%q. got=%q", expected.Token.Literal, bi.Token.Literal)
 	}
 
 	if bi.Value != expected.Value {
-		t.Errorf("bigIntExpr Value expected=%d. got=%d", bi.Value, expected.Value)
+		t.Errorf("bigIntExpr Value expected=%d. got=%d", expected.Value, bi.Value)
 	}
 }
 
@@ -131,14 +131,14 @@ func assertFloat(t *testing.T, expr ast.Expression, expected *ast.FloatExpr) {
 	}
 
 	if fo.Token.Kind != expected.Token.Kind {
-		t.Errorf("floatExpr Kind expected=%d. got=%d", fo.Token.Kind, expected.Token.Kind)
+		t.Errorf("floatExpr Kind expected=%d. got=%d", expected.Token.Kind, fo.Token.Kind)
 	}
 
 	if fo.Token.Literal != expected.Token.Literal {
-		t.Errorf("floatExpr Literal expected=%q. got=%q", fo.Token.Literal, expected.Token.Literal)
+		t.Errorf("floatExpr Literal expected=%q. got=%q", expected.Token.Literal, fo.Token.Literal)
 	}
 
 	if fo.Value != expected.Value {
-		t.Errorf("floatExpr Value expected=%f. got=%f", fo.Value, expected.Value)
+		t.Errorf("floatExpr Value expected=%f. got=%f", expected.Value, fo.Value)
 	}
 }
