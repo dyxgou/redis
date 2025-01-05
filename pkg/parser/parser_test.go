@@ -31,6 +31,58 @@ func TestParseGetCommand(t *testing.T) {
 	assertGetCommand(t, cmd, tt.expected)
 }
 
+func TestSetCommand(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected ast.SetCommand
+	}{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$8\r\n\"my string\"\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.StringExpr{Token: token.New(token.BULKSTRING, "my string")},
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n#t\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: true},
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n#f\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: false},
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n3600\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+			Ex:    3600,
+		}},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+
+		cmd, err := p.Parse()
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		assertSetCommand(t, cmd, &tt.expected)
+	}
+}
+
 func TestParseBoolean(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -72,15 +124,15 @@ func TestParseString(t *testing.T) {
 		expected ast.StringExpr
 	}{
 		{
-			input: "\"string 1\"",
+			input: "$7\r\n\"string 1\"",
 			expected: ast.StringExpr{
-				Token: token.New(token.STRING, "string 1"),
+				Token: token.New(token.BULKSTRING, "string 1"),
 			},
 		},
 		{
-			input: "\"string 2\"",
+			input: "$7\r\n\"string 2\"",
 			expected: ast.StringExpr{
-				Token: token.New(token.STRING, "string 2"),
+				Token: token.New(token.BULKSTRING, "string 2"),
 			},
 		},
 	}
@@ -102,19 +154,19 @@ func TestParseString(t *testing.T) {
 func TestParseInteger(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected ast.IntegerExpr
+		expected ast.IntegerLit
 	}{
 		{
-			input: "5",
-			expected: ast.IntegerExpr{
-				Token: token.New(token.INTEGER, "5"),
+			input: ":5",
+			expected: ast.IntegerLit{
+				Token: token.New(token.INTEGER, ":"),
 				Value: 5,
 			},
 		},
 		{
-			input: "5614",
-			expected: ast.IntegerExpr{
-				Token: token.New(token.INTEGER, "5614"),
+			input: ":5614",
+			expected: ast.IntegerLit{
+				Token: token.New(token.INTEGER, ":"),
 				Value: 5614,
 			},
 		},
@@ -140,16 +192,16 @@ func TestParseBigNumber(t *testing.T) {
 		expected ast.BigIntegerExpr
 	}{
 		{
-			input: "5123123123123123",
+			input: "(5123123123123123",
 			expected: ast.BigIntegerExpr{
-				Token: token.New(token.BIGNUMBER, "5123123123123123"),
+				Token: token.New(token.BIGINT, "("),
 				Value: 5123123123123123,
 			},
 		},
 		{
-			input: "5614546145614456123",
+			input: "(5614546145614456123",
 			expected: ast.BigIntegerExpr{
-				Token: token.New(token.BIGNUMBER, "5614546145614456123"),
+				Token: token.New(token.BIGINT, "("),
 				Value: 5614546145614456123,
 			},
 		},
@@ -175,16 +227,16 @@ func TestParseFloat(t *testing.T) {
 		expected ast.FloatExpr
 	}{
 		{
-			input: "123.123",
+			input: ",123.123",
 			expected: ast.FloatExpr{
-				Token: token.New(token.FLOAT, "123.123"),
+				Token: token.New(token.FLOAT, ","),
 				Value: 123.123,
 			},
 		},
 		{
-			input: "321.321",
+			input: ",321.321",
 			expected: ast.FloatExpr{
-				Token: token.New(token.FLOAT, "321.321"),
+				Token: token.New(token.FLOAT, ","),
 				Value: 321.321,
 			},
 		},

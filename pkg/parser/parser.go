@@ -6,6 +6,7 @@ import (
 	"github/dyxgou/redis/pkg/ast"
 	"github/dyxgou/redis/pkg/lexer"
 	"github/dyxgou/redis/pkg/token"
+	"log/slog"
 	"strconv"
 )
 
@@ -34,6 +35,7 @@ func New(l *lexer.Lexer) *Parser {
 func (p *Parser) next() {
 	p.curTok = p.readTok
 	p.readTok = p.l.NextToken()
+	// slog.Info("toks", "cur", p.curTok, "read", p.readTok)
 }
 
 func (p *Parser) done() bool {
@@ -61,8 +63,8 @@ func (p *Parser) parseCommand() (ast.Command, error) {
 	switch p.curTok.Kind {
 	case token.GET:
 		return p.parseGetCommand()
-		// case token.SET:
-		// 	return p.parseSetCommand()
+	case token.SET:
+		return p.parseSetCommand()
 	}
 
 	return nil, fmt.Errorf("command not supported. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
@@ -74,8 +76,8 @@ func (p *Parser) skipBulkString() error {
 	}
 
 	p.next()
-	if !p.curTokIs(token.INTEGER) {
-		return p.isNotIntegerErr()
+	if !p.curTokIs(token.NUMBER) {
+		return p.isNotNumberErr()
 	}
 
 	p.next()
@@ -92,8 +94,8 @@ func (p *Parser) parseBegCommand() error {
 	}
 
 	p.next()
-	if !p.curTokIs(token.INTEGER) {
-		return p.isNotIntegerErr()
+	if !p.curTokIs(token.NUMBER) {
+		return p.isNotNumberErr()
 	}
 	n, err := strconv.Atoi(p.curTok.Literal)
 
@@ -113,6 +115,10 @@ func (p *Parser) parseBegCommand() error {
 
 func (p *Parser) curTokIs(k token.TokenKind) bool {
 	return p.curTok.Kind == k
+}
+
+func (p *Parser) readTokIs(k token.TokenKind) bool {
+	return p.readTok.Kind == k
 }
 
 func (p *Parser) checkCRLF() error {
@@ -147,6 +153,44 @@ func (p *Parser) parseGetCommand() (*ast.GetCommand, error) {
 	return getCmd, nil
 }
 
+func (p *Parser) parseSetCommand() (*ast.SetCommand, error) {
+	sc := &ast.SetCommand{Token: p.curTok}
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	key, err := p.parseIdent()
+	if err != nil {
+		return nil, err
+	}
+
+	sc.Key = key
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	v, err := p.parseValue()
+	if err != nil {
+		return nil, err
+	}
+
+	sc.Value = v
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	if !p.readTokIs(token.EOF) {
+		slog.Info("parse args")
+	}
+
+	return sc, nil
+}
+
 func (p *Parser) isNotArrayErr() error {
 	return fmt.Errorf(
 		"token expected=%d ('ARRAY'). got=%d (%s)",
@@ -156,10 +200,10 @@ func (p *Parser) isNotArrayErr() error {
 	)
 }
 
-func (p *Parser) isNotIntegerErr() error {
+func (p *Parser) isNotNumberErr() error {
 	return fmt.Errorf(
-		"token expected=%d ('INTEGER'). got=%d (%s)",
-		token.INTEGER,
+		"token expected=%d ('NUMBER'). got=%d (%s)",
+		token.NUMBER,
 		p.curTok.Kind,
 		p.curTok.Literal,
 	)
@@ -199,18 +243,17 @@ func (p *Parser) parseValue() (ast.Expression, error) {
 	switch p.curTok.Kind {
 	case token.BOOLEAN:
 		return p.parseBoolean()
-	case token.STRING:
 	case token.BULKSTRING:
 		return p.parseString()
 	case token.INTEGER:
 		return p.parseInteger()
-	case token.BIGNUMBER:
+	case token.BIGINT:
 		return p.parseBigInt()
 	case token.FLOAT:
 		return p.parseFloat()
 	}
 
-	return nil, fmt.Errorf("curTok is not a value. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
+	return nil, fmt.Errorf("curTok kind is not a value. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
 }
 
 func (p *Parser) parseBoolean() (*ast.BooleanExpr, error) {
@@ -236,13 +279,15 @@ func (p *Parser) parseString() (*ast.StringExpr, error) {
 	if err := p.skipBulkString(); err != nil {
 		return nil, err
 	}
+
 	se := &ast.StringExpr{Token: p.curTok}
 
 	return se, nil
 }
 
-func (p *Parser) parseInteger() (*ast.IntegerExpr, error) {
-	ie := &ast.IntegerExpr{Token: p.curTok}
+func (p *Parser) parseInteger() (*ast.IntegerLit, error) {
+	ie := &ast.IntegerLit{Token: p.curTok}
+	p.next()
 
 	v, err := strconv.Atoi(p.curTok.Literal)
 	if err != nil {
@@ -256,6 +301,7 @@ func (p *Parser) parseInteger() (*ast.IntegerExpr, error) {
 
 func (p *Parser) parseBigInt() (*ast.BigIntegerExpr, error) {
 	bi := &ast.BigIntegerExpr{Token: p.curTok}
+	p.next()
 
 	v, err := strconv.ParseInt(p.curTok.Literal, 10, 64)
 	if err != nil {
@@ -268,6 +314,8 @@ func (p *Parser) parseBigInt() (*ast.BigIntegerExpr, error) {
 
 func (p *Parser) parseFloat() (*ast.FloatExpr, error) {
 	fo := &ast.FloatExpr{Token: p.curTok}
+	p.next()
+
 	v, err := strconv.ParseFloat(p.curTok.Literal, 64)
 	if err != nil {
 		return nil, err
