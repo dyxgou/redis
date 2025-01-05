@@ -55,7 +55,7 @@ func (l *Lexer) NextToken() token.Token {
 	var t token.Token
 
 	if l.ch == qoute {
-		t.Kind = token.STRING
+		t.Kind = token.BULKSTRING
 		t.Literal = l.readString()
 		l.next()
 		return t
@@ -66,7 +66,7 @@ func (l *Lexer) NextToken() token.Token {
 		t.Kind = token.LookupIdent(t.Literal)
 		return t
 	} else if isDigit(l.ch) {
-		num, isFloat, err := l.readNumber()
+		num, err := l.readNumber()
 
 		if err != nil {
 			slog.Error("tokenizing number failed", "err", err)
@@ -75,16 +75,7 @@ func (l *Lexer) NextToken() token.Token {
 			return t
 		}
 
-		if isFloat {
-			t.Kind = token.FLOAT
-		} else {
-			if len(num) > 10 {
-				t.Kind = token.BIGNUMBER
-			} else {
-				t.Kind = token.INTEGER
-			}
-		}
-
+		t.Kind = token.NUMBER
 		t.Literal = num
 		return t
 	}
@@ -114,15 +105,10 @@ func (l *Lexer) readIdent() string {
 	return l.input[pos : l.pos+offset]
 }
 
-func (l *Lexer) readNumber() (string, bool, error) {
+func (l *Lexer) readNumber() (string, error) {
 	pos := l.pos
-	var isFloat bool
 
 	for isDigit(l.ch) {
-		if l.ch == '.' {
-			isFloat = true
-		}
-
 		l.next()
 	}
 
@@ -131,10 +117,10 @@ func (l *Lexer) readNumber() (string, bool, error) {
 	number := l.input[pos : l.pos+offset]
 
 	if number[len(number)-1] == '.' {
-		return "", false, fmt.Errorf("number invalid. last char cannot be '.'")
+		return "", fmt.Errorf("number invalid. last char cannot be '.'")
 	}
 
-	return number, isFloat, nil
+	return number, nil
 }
 
 func (l *Lexer) peekChar() byte {

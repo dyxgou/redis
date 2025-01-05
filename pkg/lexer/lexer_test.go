@@ -54,7 +54,7 @@ func TestTokenizeString(t *testing.T) {
 		expected token.Token
 	}{
 		input:    "\"value\"",
-		expected: token.New(token.STRING, "value"),
+		expected: token.New(token.BULKSTRING, "value"),
 	}
 
 	l := New(tt.input)
@@ -71,29 +71,46 @@ func TestTokenizeString(t *testing.T) {
 
 func TestTokenizeNumber(t *testing.T) {
 	tests := []struct {
-		input         string
-		expectedToken token.Token
+		input          string
+		expectedTokens []token.Token
 	}{
-		{"123123", token.New(token.INTEGER, "123123")},
-		{"312", token.New(token.INTEGER, "312")},
-		{"312.123", token.New(token.FLOAT, "312.123")},
+		{
+			input: ":123",
+			expectedTokens: []token.Token{
+				token.New(token.INTEGER, ":"),
+				token.New(token.NUMBER, "123"),
+			},
+		},
+		{
+			input: ",123.123",
+			expectedTokens: []token.Token{
+				token.New(token.FLOAT, ","),
+				token.New(token.NUMBER, "123.123"),
+			},
+		},
+		{
+			input: "(123123123123123",
+			expectedTokens: []token.Token{
+				token.New(token.BIGINT, "("),
+				token.New(token.NUMBER, "123123123123123"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		l := New(tt.input)
 
-		tok := l.NextToken()
+		for _, expt := range tt.expectedTokens {
+			tok := l.NextToken()
 
-		if tok.Kind != tt.expectedToken.Kind {
-			t.Errorf(
-				"token kind expected=%d. got=%d (%q)", tt.expectedToken.Kind, tok.Kind, tok.Literal,
-			)
-		}
+			if tok.Kind != expt.Kind {
+				t.Errorf("token kind expected=%d. got=%d (%q)", expt.Kind, tok.Kind, tok.Literal)
+			}
 
-		if tok.Literal != tt.expectedToken.Literal {
-			t.Errorf(
-				"token literal expected=%q. got=%q", tt.expectedToken.Literal, tok.Literal,
-			)
+			if tok.Literal != expt.Literal {
+				t.Errorf("token literal expected=%q. got=%q", expt.Literal, tok.Literal)
+			}
+
 		}
 	}
 }
@@ -107,20 +124,20 @@ func TestNextToken(t *testing.T) {
 			input: "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n",
 			expectedTokens: []token.Token{
 				token.New(token.ARRAY, "*"),
-				token.New(token.INTEGER, "2"),
+				token.New(token.NUMBER, "2"),
 				token.New(token.CRLF, token.EndCRLF),
 				token.New(token.BULKSTRING, "$"),
-				token.New(token.INTEGER, "3"),
+				token.New(token.NUMBER, "3"),
 				token.New(token.CRLF, token.EndCRLF),
 				token.New(token.GET, "GET"),
 				token.New(token.CRLF, token.EndCRLF),
 				token.New(token.BULKSTRING, "$"),
-				token.New(token.INTEGER, "3"),
+				token.New(token.NUMBER, "3"),
 				token.New(token.CRLF, token.EndCRLF),
 				token.New(token.IDENT, "key"),
 				token.New(token.CRLF, token.EndCRLF),
 				token.New(token.BULKSTRING, "$"),
-				token.New(token.INTEGER, "5"),
+				token.New(token.NUMBER, "5"),
 				token.New(token.CRLF, token.EndCRLF),
 				token.New(token.IDENT, "value"),
 				token.New(token.CRLF, token.EndCRLF),
