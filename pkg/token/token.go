@@ -47,7 +47,8 @@ const (
 
 	// VALUES
 	values_beg
-	BIGNUMBER
+	NUMBER
+	BIGINT
 	INTEGER
 	STRING
 	FLOAT
