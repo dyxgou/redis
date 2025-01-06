@@ -1,19 +1,15 @@
 package parser
 
 import (
-	"errors"
 	"fmt"
 	"github/dyxgou/redis/pkg/ast"
 	"github/dyxgou/redis/pkg/lexer"
 	"github/dyxgou/redis/pkg/token"
-	"log/slog"
 	"strconv"
 )
 
 const trueStr = "t"
 const falseStr = "f"
-
-var errNilPtr = errors.New("destination pointer is nil")
 
 type Parser struct {
 	l *lexer.Lexer
@@ -184,47 +180,71 @@ func (p *Parser) parseSetCommand() (*ast.SetCommand, error) {
 		return nil, err
 	}
 
-	if !p.readTokIs(token.EOF) {
-		slog.Info("parse args")
+	if err := p.parseSetArgs(sc); err != nil {
+		if !p.readTokIs(token.EOF) {
+			return nil, err
+		}
 	}
 
 	return sc, nil
 }
 
-func (p *Parser) isNotArrayErr() error {
-	return fmt.Errorf(
-		"token expected=%d ('ARRAY'). got=%d (%s)",
-		token.ARRAY,
-		p.curTok.Kind,
-		p.curTok.Literal,
-	)
+func (p *Parser) parseSetArgs(sc *ast.SetCommand) error {
+	if !token.IsArg(p.curTok.Kind) {
+		return fmt.Errorf("SET expected args token kinds. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
+	}
+
+	switch p.curTok.Kind {
+	case token.EX:
+		n, err := p.parseExArg()
+		if err != nil {
+			return err
+		}
+		sc.Ex = n
+	case token.NX:
+		if sc.Xx {
+			return fmt.Errorf("NX and XX cannot be used together")
+		}
+
+		sc.Nx = true
+	case token.XX:
+		if sc.Nx {
+			return fmt.Errorf("NX and XX cannot be used together")
+		}
+
+		sc.Xx = true
+	default:
+		return fmt.Errorf("token invalid=%d (%q). SET doesn't expect this argument", p.curTok.Kind, p.curTok.Literal)
+	}
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return err
+	}
+
+	if !p.readTokIs(token.EOF) {
+		return p.parseSetArgs(sc)
+	}
+
+	return nil
 }
 
-func (p *Parser) isNotNumberErr() error {
-	return fmt.Errorf(
-		"token expected=%d ('NUMBER'). got=%d (%s)",
-		token.NUMBER,
-		p.curTok.Kind,
-		p.curTok.Literal,
-	)
-}
+func (p *Parser) parseExArg() (int, error) {
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return 0, err
+	}
 
-func (p *Parser) isNotBulkStringErr() error {
-	return fmt.Errorf(
-		"token expected=%d ('BULKSTRING'). got=%d (%s)",
-		token.BULKSTRING,
-		p.curTok.Kind,
-		p.curTok.Literal,
-	)
-}
+	if !p.curTokIs(token.NUMBER) {
+		return 0, p.isNotNumberErr()
+	}
 
-func (p *Parser) isNotIdentErr() error {
-	return fmt.Errorf(
-		"token expected=%d ('IDENT'). got=%d (%q)",
-		token.IDENT,
-		p.curTok.Kind,
-		p.curTok.Literal,
-	)
+	n, err := strconv.Atoi(p.curTok.Literal)
+	if err != nil {
+		return 0, err
+	}
+
+	return n, nil
 }
 
 func (p *Parser) parseIdent() (string, error) {
@@ -323,4 +343,40 @@ func (p *Parser) parseFloat() (*ast.FloatExpr, error) {
 
 	fo.Value = v
 	return fo, nil
+}
+
+func (p *Parser) isNotArrayErr() error {
+	return fmt.Errorf(
+		"token expected=%d ('ARRAY'). got=%d (%s)",
+		token.ARRAY,
+		p.curTok.Kind,
+		p.curTok.Literal,
+	)
+}
+
+func (p *Parser) isNotNumberErr() error {
+	return fmt.Errorf(
+		"token expected=%d ('NUMBER'). got=%d (%s)",
+		token.NUMBER,
+		p.curTok.Kind,
+		p.curTok.Literal,
+	)
+}
+
+func (p *Parser) isNotBulkStringErr() error {
+	return fmt.Errorf(
+		"token expected=%d ('BULKSTRING'). got=%d (%s)",
+		token.BULKSTRING,
+		p.curTok.Kind,
+		p.curTok.Literal,
+	)
+}
+
+func (p *Parser) isNotIdentErr() error {
+	return fmt.Errorf(
+		"token expected=%d ('IDENT'). got=%d (%q)",
+		token.IDENT,
+		p.curTok.Kind,
+		p.curTok.Literal,
+	)
 }

@@ -43,7 +43,7 @@ func assertSetCommand(t *testing.T, cmd ast.Command, sc *ast.SetCommand) {
 	}
 
 	if setCmd.Xx != sc.Xx {
-		t.Errorf("setCmd Xx expected=%t. got=%t", sc.Nx, setCmd.Nx)
+		t.Errorf("setCmd Xx expected=%t. got=%t", sc.Xx, setCmd.Xx)
 	}
 }
 

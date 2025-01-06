@@ -67,6 +67,32 @@ func TestSetCommand(t *testing.T) {
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 			Ex:    3600,
 		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n3600\r\nXX\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+			Ex:    3600,
+			Xx:    true,
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n3600\r\nNX\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+			Ex:    3600,
+			Nx:    true,
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nNX\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+			Nx:    true,
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nXX\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+			Xx:    true,
+		}},
 	}
 
 	for _, tt := range tests {
