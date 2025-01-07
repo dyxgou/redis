@@ -4,7 +4,6 @@ import (
 	"github/dyxgou/redis/pkg/token"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type (
@@ -23,16 +22,16 @@ type (
 
 	// A GetExCommand represents the "GETEX <key> <value> <EX> <time>" if the Ex is not provided, the parser throws an error
 	GetExCommand struct {
-		token token.Token
-		key   string
-		value string
-		Ex    time.Duration
+		Token token.Token
+		Key   string
+		Value string
+		Ex    int
 	}
 
 	// A GetDelCommand represents the "GETDEL <key>"
 	GetDelCommand struct {
-		token token.Token
-		key   string
+		Token token.Token
+		Key   string
 	}
 
 	// A SetCommand represents the command "SET <key> <value>" if Ex is not provided it is assumed that the key won't be expired
@@ -50,66 +49,68 @@ type (
 
 	// A IncrCommand represents "INCR <key>" and increments the key by 1.
 	IncrCommand struct {
-		token token.Token
-		key   string
+		Token token.Token
+		Key   string
 	}
 
 	// A IncrByCommand represents "INCRBY <key> <increment>" and increments the key by increment.
 	IncrByCommand struct {
-		token     token.Token
-		key       string
-		increment int
+		Key       string
+		Token     token.Token
+		Increment int
 	}
 
 	// A DercCommand represents "DECR <key>" and decrements the key by 1.
 	DercCommand struct {
-		token token.Token
-		key   string
+		Token token.Token
+		Key   string
 	}
 
 	// A DercByCommand represents "DECRBY <key> <decrement>" and decrements the key by decrement.
 	DercByCommand struct {
-		token     token.Token
-		key       string
-		decrement int
+		Token     token.Token
+		Key       string
+		Decrement int
 	}
 
 	// A MGetCommand stands for Multiple Get and represents "MGET <key> [<key> ...]"
 	MGetCommand struct {
-		token token.Token
-		keys  []string
+		Token token.Token
+		Keys  []string
 	}
 
 	// MSetCommand stands for Multiple Set and represents "MSET <key> <value> [<key> <value> ...]"
 	MSetCommand struct {
-		token token.Token
-		pairs []struct {
-			key   string
-			value string
+		Token token.Token
+		Pairs []struct {
+			Key   string
+			Value string
 		}
 	}
 
 	// AppendCommand represents "APPEND <key> <value>"
 	AppendCommand struct {
-		token token.Token
-		key   string
-		value string
+		Token token.Token
+		Key   string
+		Value string
 	}
 
 	// ExistsCommand represents "EXISTS <key> <value>"
 	ExistsCommand struct {
-		token token.Token
-		key   string
+		Token token.Token
+		Key   string
 	}
 )
 
 func (gc *GetCommand) cmdNode()     {}
 func (sc *SetCommand) cmdNode()     {}
 func (gsc *GetSetCommand) cmdNode() {}
+func (ge *GetExCommand) cmdNode()   {}
 
 func (gc *GetCommand) TokenLiteral() string     { return gc.Token.Literal }
 func (sc *SetCommand) TokenLiteral() string     { return sc.Token.Literal }
 func (gsc *GetSetCommand) TokenLiteral() string { return gsc.Token.Literal }
+func (ge *GetExCommand) TokenLiteral() string   { return ge.Token.Literal }
 
 func (gc *GetCommand) String() string {
 	var sb strings.Builder
@@ -153,6 +154,19 @@ func (gsc *GetSetCommand) String() string {
 	sb.WriteString(gsc.Value.String())
 	sb.WriteByte(' ')
 
+	return sb.String()
+}
+
+func (ge *GetExCommand) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(ge.Token.Literal)
+	sb.WriteByte(' ')
+
+	sb.WriteString(ge.Key)
+	sb.WriteByte(' ')
+
+	writeNumArg(&sb, "EX", ge.Ex)
 	return sb.String()
 }
 
