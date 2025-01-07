@@ -46,6 +46,25 @@ func assertSetCommand(t *testing.T, cmd ast.Command, sc *ast.SetCommand) {
 		t.Errorf("setCmd Xx expected=%t. got=%t", sc.Xx, setCmd.Xx)
 	}
 }
+func assertGetExCommand(t *testing.T, expr ast.Command, expected *ast.GetExCommand) {
+	t.Helper()
+	gex, ok := expr.(*ast.GetExCommand)
+	if !ok {
+		t.Errorf("expr is not *ast.GetExCommand. got=%T", expr)
+	}
+
+	if gex.Token.Kind != expected.Token.Kind {
+		t.Errorf("gexCmd Kind expected=%d. got=%d", expected.Token.Kind, gex.Token.Kind)
+	}
+
+	if gex.Token.Literal != expected.Token.Literal {
+		t.Errorf("gexCmd Literal expected=%q. got=%q", expected.Token.Literal, gex.Token.Literal)
+	}
+
+	if gex.Ex != expected.Ex {
+		t.Errorf("gexCmd Ex expected=%d. got=%d", expected.Ex, gex.Ex)
+	}
+}
 
 func assertGetSetCommand(t *testing.T, expr ast.Command, expected *ast.GetSetCommand) {
 	t.Helper()

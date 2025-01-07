@@ -61,20 +61,20 @@ func TestSetCommand(t *testing.T) {
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 		}},
-		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n3600\r\n", ast.SetCommand{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n:3600\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 			Ex:    3600,
 		}},
-		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n3600\r\nXX\r\n", ast.SetCommand{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n:3600\r\nXX\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 			Ex:    3600,
 			Xx:    true,
 		}},
-		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n3600\r\nNX\r\n", ast.SetCommand{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n:3600\r\nNX\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
@@ -132,6 +132,31 @@ func TestParseGetSetCommand(t *testing.T) {
 	}
 
 	assertGetSetCommand(t, cmd, &tt.expected)
+}
+
+func TestParseGetExCommand(t *testing.T) {
+	tt := struct {
+		input    string
+		expected ast.GetExCommand
+	}{
+		input: "*4\r\n$6\r\nGETEX\r\n$3\r\nkey\r\n$2\r\nEX\r\n:20\r\n",
+		expected: ast.GetExCommand{
+			Token: token.New(token.GETEX, "GETEX"),
+			Key:   "key",
+			Ex:    20,
+		},
+	}
+
+	l := lexer.New(tt.input)
+	p := New(l)
+
+	cmd, err := p.Parse()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assertGetExCommand(t, cmd, &tt.expected)
 }
 
 func TestParseBoolean(t *testing.T) {

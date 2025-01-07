@@ -63,6 +63,8 @@ func (p *Parser) parseCommand() (ast.Command, error) {
 		return p.parseSetCommand()
 	case token.GETSET:
 		return p.parseGetSetCommand()
+	case token.GETEX:
+		return p.parseGetExCommand()
 	}
 
 	return nil, fmt.Errorf("command not supported. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
@@ -221,6 +223,45 @@ func (p *Parser) parseGetSetCommand() (*ast.GetSetCommand, error) {
 	return gsc, nil
 }
 
+func (p *Parser) parseGetExCommand() (*ast.GetExCommand, error) {
+	ge := &ast.GetExCommand{Token: p.curTok}
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	key, err := p.parseIdent()
+	if err != nil {
+		return nil, err
+	}
+
+	ge.Key = key
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	if err := p.skipBulkString(); err != nil {
+		return nil, err
+	}
+
+	if !p.curTokIs(token.EX) {
+		return nil, fmt.Errorf(
+			"token expected=%d ('EX'). got=%d (%q)", token.EX, p.curTok.Kind, p.curTok.Literal,
+		)
+	}
+
+	ex, err := p.parseExArg()
+	if err != nil {
+		return nil, err
+	}
+	ge.Ex = ex
+
+	return ge, nil
+}
+
 func (p *Parser) parseSetArgs(sc *ast.SetCommand) error {
 	if !token.IsArg(p.curTok.Kind) {
 		return fmt.Errorf("SET expected args token kinds. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
@@ -267,10 +308,11 @@ func (p *Parser) parseExArg() (int, error) {
 		return 0, err
 	}
 
-	if !p.curTokIs(token.NUMBER) {
-		return 0, p.isNotNumberErr()
+	if !p.curTokIs(token.INTEGER) {
+		return 0, p.isNotIntegerErr()
 	}
 
+	p.next()
 	n, err := strconv.Atoi(p.curTok.Literal)
 	if err != nil {
 		return 0, err
@@ -390,6 +432,15 @@ func (p *Parser) isNotNumberErr() error {
 	return fmt.Errorf(
 		"token expected=%d ('NUMBER'). got=%d (%s)",
 		token.NUMBER,
+		p.curTok.Kind,
+		p.curTok.Literal,
+	)
+}
+
+func (p *Parser) isNotIntegerErr() error {
+	return fmt.Errorf(
+		"token expected=%d ('INTEGER'). got=%d (%s)",
+		token.INTEGER,
 		p.curTok.Kind,
 		p.curTok.Literal,
 	)
