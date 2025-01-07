@@ -159,6 +159,38 @@ func TestParseGetExCommand(t *testing.T) {
 	assertGetExCommand(t, cmd, &tt.expected)
 }
 
+func TestParseGetDel(t *testing.T) {
+	tt := struct {
+		input    string
+		expected ast.GetDelCommand
+	}{
+		input: "*2\r\n$6\r\nGETDEL\r\n$3\r\nkey\r\n",
+		expected: ast.GetDelCommand{
+			Token: token.New(token.GETDEL, "GETDEL"),
+			Key:   "key",
+		},
+	}
+
+	l := lexer.New(tt.input)
+	p := New(l)
+
+	cmd, err := p.Parse()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	gdCmd, ok := cmd.(*ast.GetDelCommand)
+
+	if !ok {
+		t.Errorf("command expected=*ast.GetCommand. got=%T", cmd)
+	}
+
+	if gdCmd.Key != tt.expected.Key {
+		t.Errorf("gdCmd key expected=%q. got=%q", tt.expected.Key, gdCmd.Key)
+	}
+}
+
 func TestParseBoolean(t *testing.T) {
 	tests := []struct {
 		input    string
