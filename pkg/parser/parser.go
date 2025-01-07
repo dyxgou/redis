@@ -61,6 +61,8 @@ func (p *Parser) parseCommand() (ast.Command, error) {
 		return p.parseGetCommand()
 	case token.SET:
 		return p.parseSetCommand()
+	case token.GETSET:
+		return p.parseGetSetCommand()
 	}
 
 	return nil, fmt.Errorf("command not supported. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
@@ -187,6 +189,36 @@ func (p *Parser) parseSetCommand() (*ast.SetCommand, error) {
 	}
 
 	return sc, nil
+}
+
+func (p *Parser) parseGetSetCommand() (*ast.GetSetCommand, error) {
+	gsc := &ast.GetSetCommand{Token: p.curTok}
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	key, err := p.parseIdent()
+	if err != nil {
+		return nil, err
+	}
+
+	gsc.Key = key
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	v, err := p.parseValue()
+	if err != nil {
+		return nil, err
+	}
+
+	gsc.Value = v
+
+	return gsc, nil
 }
 
 func (p *Parser) parseSetArgs(sc *ast.SetCommand) error {

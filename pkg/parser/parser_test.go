@@ -109,6 +109,31 @@ func TestSetCommand(t *testing.T) {
 	}
 }
 
+func TestParseGetSetCommand(t *testing.T) {
+	tt := struct {
+		input    string
+		expected ast.GetSetCommand
+	}{
+		input: "*3\r\n$6\r\nGETSET\r\n$3\r\nkey\r\n#t\r\n",
+		expected: ast.GetSetCommand{
+			Token: token.New(token.GETSET, "GETSET"),
+			Key:   "key",
+			Value: &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: true},
+		},
+	}
+
+	l := lexer.New(tt.input)
+	p := New(l)
+
+	cmd, err := p.Parse()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assertGetSetCommand(t, cmd, &tt.expected)
+}
+
 func TestParseBoolean(t *testing.T) {
 	tests := []struct {
 		input    string

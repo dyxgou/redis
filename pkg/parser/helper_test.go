@@ -47,6 +47,26 @@ func assertSetCommand(t *testing.T, cmd ast.Command, sc *ast.SetCommand) {
 	}
 }
 
+func assertGetSetCommand(t *testing.T, expr ast.Command, expected *ast.GetSetCommand) {
+	t.Helper()
+	gsc, ok := expr.(*ast.GetSetCommand)
+	if !ok {
+		t.Errorf("expr is not *ast.GetSetCommand. got=%T", expr)
+	}
+
+	if gsc.Token.Kind != expected.Token.Kind {
+		t.Errorf("gscCmd Kind expected=%d. got=%d", expected.Token.Kind, gsc.Token.Kind)
+	}
+
+	if gsc.Token.Literal != expected.Token.Literal {
+		t.Errorf("gscCmd Literal expected=%q. got=%q", expected.Token.Literal, gsc.Token.Literal)
+	}
+
+	if gsc.Value.String() != expected.Value.String() {
+		t.Errorf("gscCmd Value expected=%q. got=%q", expected.Value, gsc.Value)
+	}
+}
+
 func assertBoolean(t *testing.T, expr ast.Expression, expected *ast.BooleanExpr) {
 	b, ok := expr.(*ast.BooleanExpr)
 	if !ok {
@@ -62,7 +82,7 @@ func assertBoolean(t *testing.T, expr ast.Expression, expected *ast.BooleanExpr)
 	}
 
 	if b.Value != expected.Value {
-		t.Errorf("boolExpr Value expected=%t. got=%t", expected.Value, expected.Value)
+		t.Errorf("boolExpr Value expected=%t. got=%t", expected.Value, b.Value)
 	}
 }
 

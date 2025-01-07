@@ -16,9 +16,9 @@ type (
 
 	// A GetSetCommand represents the "GETSET <key> <value>" and acts like a SET followed by a GET
 	GetSetCommand struct {
-		token token.Token
-		key   string
-		value string
+		Token token.Token
+		Key   string
+		Value Expression
 	}
 
 	// A GetExCommand represents the "GETEX <key> <value> <EX> <time>" if the Ex is not provided, the parser throws an error
@@ -103,8 +103,14 @@ type (
 	}
 )
 
-func (gc *GetCommand) cmdNode()             {}
-func (gc *GetCommand) TokenLiteral() string { return gc.Token.Literal }
+func (gc *GetCommand) cmdNode()     {}
+func (sc *SetCommand) cmdNode()     {}
+func (gsc *GetSetCommand) cmdNode() {}
+
+func (gc *GetCommand) TokenLiteral() string     { return gc.Token.Literal }
+func (sc *SetCommand) TokenLiteral() string     { return sc.Token.Literal }
+func (gsc *GetSetCommand) TokenLiteral() string { return gsc.Token.Literal }
+
 func (gc *GetCommand) String() string {
 	var sb strings.Builder
 
@@ -116,8 +122,6 @@ func (gc *GetCommand) String() string {
 	return sb.String()
 }
 
-func (sc *SetCommand) cmdNode()             {}
-func (sc *SetCommand) TokenLiteral() string { return sc.Token.Literal }
 func (sc *SetCommand) String() string {
 	var sb strings.Builder
 
@@ -133,6 +137,21 @@ func (sc *SetCommand) String() string {
 	writeNumArg(&sb, "Ex", sc.Ex)
 	writeBoolArg(&sb, "NX", sc.Nx)
 	writeBoolArg(&sb, "XX", sc.Xx)
+
+	return sb.String()
+}
+
+func (gsc *GetSetCommand) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(gsc.Token.Literal)
+	sb.WriteByte(' ')
+
+	sb.WriteString(gsc.Key)
+	sb.WriteByte(' ')
+
+	sb.WriteString(gsc.Value.String())
+	sb.WriteByte(' ')
 
 	return sb.String()
 }
