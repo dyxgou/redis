@@ -107,12 +107,14 @@ func (sc *SetCommand) cmdNode()     {}
 func (gsc *GetSetCommand) cmdNode() {}
 func (ge *GetExCommand) cmdNode()   {}
 func (gd *GetDelCommand) cmdNode()  {}
+func (inc *IncrCommand) cmdNode()   {}
 
 func (gc *GetCommand) TokenLiteral() string     { return gc.Token.Literal }
 func (sc *SetCommand) TokenLiteral() string     { return sc.Token.Literal }
 func (gsc *GetSetCommand) TokenLiteral() string { return gsc.Token.Literal }
 func (ge *GetExCommand) TokenLiteral() string   { return ge.Token.Literal }
 func (gd *GetDelCommand) TokenLiteral() string  { return gd.Token.Literal }
+func (inc *IncrCommand) TokenLiteral() string   { return inc.Token.Literal }
 
 func (gc *GetCommand) String() string {
 	var sb strings.Builder
@@ -181,6 +183,18 @@ func (gd *GetDelCommand) String() string {
 	sb.WriteString(gd.Key)
 
 	return sb.String()
+}
+
+func (inc *IncrCommand) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(inc.Token.Literal)
+	sb.WriteByte(' ')
+
+	sb.WriteString(inc.Key)
+
+	return sb.String()
+
 }
 
 type (

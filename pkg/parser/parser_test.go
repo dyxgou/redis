@@ -191,6 +191,38 @@ func TestParseGetDel(t *testing.T) {
 	}
 }
 
+func TestParseIncrCommand(t *testing.T) {
+	tt := struct {
+		input    string
+		expected ast.IncrCommand
+	}{
+		input: "*2\r\n$2\r\nINCR\r\n$3\r\nkey\r\n",
+		expected: ast.IncrCommand{
+			Token: token.New(token.INCR, "INCR"),
+			Key:   "key",
+		},
+	}
+
+	l := lexer.New(tt.input)
+	p := New(l)
+
+	cmd, err := p.Parse()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	gdCmd, ok := cmd.(*ast.IncrCommand)
+
+	if !ok {
+		t.Errorf("command expected=*ast.GetCommand. got=%T", cmd)
+	}
+
+	if gdCmd.Key != tt.expected.Key {
+		t.Errorf("gdCmd key expected=%q. got=%q", tt.expected.Key, gdCmd.Key)
+	}
+}
+
 func TestParseBoolean(t *testing.T) {
 	tests := []struct {
 		input    string
