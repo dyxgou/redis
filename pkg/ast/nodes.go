@@ -62,6 +62,8 @@ type (
 
 	// A DercCommand represents "DECR <key>" and decrements the key by 1.
 	DercCommand struct {
+	// A DecrCommand represents "DECR <key>" and decrements the key by 1.
+	DecrCommand struct {
 		Token token.Token
 		Key   string
 	}
@@ -109,6 +111,7 @@ func (ge *GetExCommand) cmdNode()   {}
 func (gd *GetDelCommand) cmdNode()  {}
 func (inc *IncrCommand) cmdNode()   {}
 func (inc *IncrByCommand) cmdNode() {}
+func (dec *DecrCommand) cmdNode()   {}
 
 func (gc *GetCommand) TokenLiteral() string     { return gc.Token.Literal }
 func (sc *SetCommand) TokenLiteral() string     { return sc.Token.Literal }
@@ -117,6 +120,7 @@ func (ge *GetExCommand) TokenLiteral() string   { return ge.Token.Literal }
 func (gd *GetDelCommand) TokenLiteral() string  { return gd.Token.Literal }
 func (inc *IncrCommand) TokenLiteral() string   { return inc.Token.Literal }
 func (inc *IncrByCommand) TokenLiteral() string { return inc.Token.Literal }
+func (dec *DecrCommand) TokenLiteral() string   { return dec.Token.Literal }
 
 func (gc *GetCommand) String() string {
 	var sb strings.Builder
@@ -210,6 +214,16 @@ func (inc *IncrByCommand) String() string {
 	return sb.String()
 }
 
+func (dec *DecrCommand) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(dec.Token.Literal)
+	sb.WriteByte(' ')
+
+	sb.WriteString(dec.Key)
+
+	return sb.String()
+}
 type (
 	BooleanExpr struct {
 		Token token.Token

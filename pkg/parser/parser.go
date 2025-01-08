@@ -71,6 +71,8 @@ func (p *Parser) parseCommand() (ast.Command, error) {
 		return p.parseIncrCommand()
 	case token.INCRBY:
 		return p.parseIncrByCommand()
+	case token.DECR:
+		return p.parseDecrCommand()
 	}
 
 	return nil, fmt.Errorf("command not supported. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
@@ -306,6 +308,24 @@ func (p *Parser) parseIncrCommand() (*ast.IncrCommand, error) {
 	inc.Key = key
 
 	return inc, nil
+}
+
+func (p *Parser) parseDecrCommand() (*ast.DecrCommand, error) {
+	dec := &ast.DecrCommand{Token: p.curTok}
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	key, err := p.parseIdent()
+	if err != nil {
+		return nil, err
+	}
+
+	dec.Key = key
+
+	return dec, nil
 }
 
 func (p *Parser) parseIncrByCommand() (*ast.IncrByCommand, error) {
