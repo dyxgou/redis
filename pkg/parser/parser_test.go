@@ -183,11 +183,48 @@ func TestParseGetDel(t *testing.T) {
 	gdCmd, ok := cmd.(*ast.GetDelCommand)
 
 	if !ok {
-		t.Errorf("command expected=*ast.GetCommand. got=%T", cmd)
+		t.Errorf("command expected=*ast.GetDelCommand. got=%T", cmd)
 	}
 
 	if gdCmd.Key != tt.expected.Key {
 		t.Errorf("gdCmd key expected=%q. got=%q", tt.expected.Key, gdCmd.Key)
+	}
+}
+
+func TestParseIncrByCommand(t *testing.T) {
+	tt := struct {
+		input    string
+		expected ast.IncrByCommand
+	}{
+		input: "*2\r\n$6\r\nINCRBY\r\n$3\r\nkey\r\n:123\r\n",
+		expected: ast.IncrByCommand{
+			Token:     token.New(token.INCRBY, "INCRBY"),
+			Key:       "key",
+			Increment: 123,
+		},
+	}
+
+	l := lexer.New(tt.input)
+	p := New(l)
+
+	cmd, err := p.Parse()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	incCmd, ok := cmd.(*ast.IncrByCommand)
+
+	if !ok {
+		t.Errorf("command expected=*ast.IncrByCommand. got=%T", cmd)
+	}
+
+	if incCmd.Key != tt.expected.Key {
+		t.Errorf("incCmd key expected=%d. got=%d", tt.expected.Increment, incCmd.Increment)
+	}
+
+	if incCmd.Increment != tt.expected.Increment {
+		t.Errorf("incCmd increment expected=%d. got=%d", tt.expected.Increment, incCmd.Increment)
 	}
 }
 
@@ -215,11 +252,80 @@ func TestParseIncrCommand(t *testing.T) {
 	gdCmd, ok := cmd.(*ast.IncrCommand)
 
 	if !ok {
-		t.Errorf("command expected=*ast.GetCommand. got=%T", cmd)
+		t.Errorf("command expected=*ast.IncrCommand. got=%T", cmd)
 	}
 
 	if gdCmd.Key != tt.expected.Key {
 		t.Errorf("gdCmd key expected=%q. got=%q", tt.expected.Key, gdCmd.Key)
+	}
+}
+
+func TestParseDecrByCommand(t *testing.T) {
+	tt := struct {
+		input    string
+		expected ast.IncrByCommand
+	}{
+		input: "*2\r\n$6\r\nINCRBY\r\n$3\r\nkey\r\n:123\r\n",
+		expected: ast.IncrByCommand{
+			Token:     token.New(token.INCRBY, "INCRBY"),
+			Key:       "key",
+			Increment: 123,
+		},
+	}
+
+	l := lexer.New(tt.input)
+	p := New(l)
+
+	cmd, err := p.Parse()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	incCmd, ok := cmd.(*ast.IncrByCommand)
+
+	if !ok {
+		t.Errorf("command expected=*ast.IncrByCommand. got=%T", cmd)
+	}
+
+	if incCmd.Key != tt.expected.Key {
+		t.Errorf("incCmd key expected=%d. got=%d", tt.expected.Increment, incCmd.Increment)
+	}
+
+	if incCmd.Increment != tt.expected.Increment {
+		t.Errorf("incCmd increment expected=%d. got=%d", tt.expected.Increment, incCmd.Increment)
+	}
+}
+
+func TestParseDecrCommand(t *testing.T) {
+	tt := struct {
+		input    string
+		expected ast.DecrCommand
+	}{
+		input: "*2\r\n$4\r\nDECR\r\n$3\r\nkey\r\n",
+		expected: ast.DecrCommand{
+			Token: token.New(token.DECR, "DECR"),
+			Key:   "key",
+		},
+	}
+
+	l := lexer.New(tt.input)
+	p := New(l)
+
+	cmd, err := p.Parse()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	decCmd, ok := cmd.(*ast.DecrCommand)
+
+	if !ok {
+		t.Errorf("command expected=*ast.DecrCommand. got=%T", cmd)
+	}
+
+	if decCmd.Key != tt.expected.Key {
+		t.Errorf("decCmd key expected=%q. got=%q", tt.expected.Key, decCmd.Key)
 	}
 }
 
