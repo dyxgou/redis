@@ -63,3 +63,33 @@ func TestWriteNumber(t *testing.T) {
 		}
 	}
 }
+
+func TestWriteBoolean(t *testing.T) {
+	tests := []struct {
+		cur, next token.Token
+		expected  string
+	}{
+		{
+			cur:      token.New(token.BOOLEAN, "#"),
+			next:     token.New(token.IDENT, "t"),
+			expected: "#t\r\n",
+		},
+		{
+			cur:      token.New(token.BOOLEAN, "#"),
+			next:     token.New(token.IDENT, "f"),
+			expected: "#f\r\n",
+		},
+	}
+
+	for _, tt := range tests {
+		w := newWriter()
+		if err := w.writeBool(tt.cur, tt.next); err != nil {
+			t.Error(err)
+			return
+		}
+
+		if w.body.String() != tt.expected {
+			t.Errorf("body expected=%q. got=%q", tt.expected, w.body.String())
+		}
+	}
+}

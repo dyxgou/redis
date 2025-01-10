@@ -50,6 +50,33 @@ func (w *writer) writeSymbolWithAmount(k token.TokenKind, n int) error {
 	return nil
 }
 
+const TRUE = "t"
+const FALSE = "f"
+
+func (w *writer) writeBool(cur, next token.Token) error {
+	if cur.Kind != token.BOOLEAN {
+		return fmt.Errorf("curToken expected=%d ('BOOLEAN'). got=%d (%q)", token.BOOLEAN, cur.Kind, cur.Literal)
+	}
+
+	if next.Kind != token.IDENT {
+		return fmt.Errorf("nextToken expected=%d ('IDENT'). got=%d (%q)", token.IDENT, next.Kind, next.Literal)
+	}
+
+	if next.Literal != TRUE && next.Literal != FALSE {
+		return fmt.Errorf("nextToken expected 't' or 'f'. got=%q", next.Literal)
+	}
+
+	if err := w.writeSymbol(token.BOOLEAN); err != nil {
+		return err
+	}
+
+	w.body.WriteString(next.Literal)
+	w.writeCRLF()
+	w.len++
+
+	return nil
+}
+
 func (w *writer) writeWord(t token.Token) error {
 	if err := w.writeSymbolWithAmount(token.BULKSTRING, len(t.Literal)); err != nil {
 		return err

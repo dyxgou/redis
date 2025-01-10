@@ -1,7 +1,6 @@
 package serializer
 
 import (
-	"fmt"
 	"github/dyxgou/redis/pkg/lexer"
 	"github/dyxgou/redis/pkg/token"
 )
@@ -34,20 +33,35 @@ func (s *Serializer) done() bool {
 
 func (s *Serializer) Serialize() (string, error) {
 	for !s.done() {
-		if token.IsKeyword(s.curTok.Kind) || token.IsArg(s.curTok.Kind) {
+		if s.curTokIs(token.BOOLEAN) {
+			cur := s.curTok
+			s.next()
+
+			if err := s.w.writeBool(cur, s.curTok); err != nil {
+				return "", err
+			}
+
+			s.next()
+		}
+
+		if token.IsKeyword(s.curTok.Kind) || s.curTokIs(token.STRING) {
 			if err := s.w.writeWord(s.curTok); err != nil {
 				return "", err
 			}
-		} else if token.IsNumber(s.curTok.Kind) {
+		}
+
+		if s.curTokIs(token.NUMBER) {
 			if err := s.w.writeNumber(s.curTok); err != nil {
 				return "", err
 			}
-		} else {
-			return "", fmt.Errorf("token not supported. got=%d (%q)", s.curTok.Kind, s.curTok.Literal)
 		}
 
 		s.next()
 	}
 
 	return s.w.string(), nil
+}
+
+func (s *Serializer) curTokIs(k token.TokenKind) bool {
+	return s.curTok.Kind == k
 }

@@ -13,6 +13,8 @@ func TestSerialize(t *testing.T) {
 		{"SET key :123", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:123\r\n"},
 		{"SET key 123.123", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n,123.123\r\n"},
 		{"SET key 123123123123123", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n(123123123123123\r\n"},
+		{"SET key #t", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n#t\r\n"},
+		{"SET key #f", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n#f\r\n"},
 		{"SET key value EX 20", "*5\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n$2\r\nEX\r\n:20\r\n"},
 		{"SET key value EX 20 NX", "*6\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n$2\r\nEX\r\n:20\r\n$2\r\nNX\r\n"},
 		{"SET key value EX 20 XX", "*6\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n$2\r\nEX\r\n:20\r\n$2\r\nXX\r\n"},
