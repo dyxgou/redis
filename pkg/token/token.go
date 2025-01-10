@@ -31,13 +31,13 @@ const (
 
 	// CONFIG
 	CONFIG
-	keyword_end
 
 	args_beg
 	XX
 	NX
 	EX
 	args_end
+	keyword_end
 
 	// STRINGS
 	BULKSTRING
