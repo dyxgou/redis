@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github/dyxgou/redis/pkg/token"
 	"strconv"
+	"strings"
 )
 
 type writer struct {
@@ -62,7 +63,17 @@ func (w *writer) writeWord(t token.Token) error {
 }
 
 func (w *writer) writeNumber(t token.Token) error {
-	if err := w.writeSymbol(t.Kind); err != nil {
+	var sym token.TokenKind
+
+	if len(t.Literal) >= 10 {
+		sym = token.BIGINT
+	} else if isFloat(t.Literal) {
+		sym = token.FLOAT
+	} else {
+		sym = token.INTEGER
+	}
+
+	if err := w.writeSymbol(sym); err != nil {
 		return err
 	}
 
@@ -87,4 +98,8 @@ func (w *writer) string() string {
 	w.head.Write(w.body.Bytes())
 
 	return w.head.String()
+}
+
+func isFloat(n string) bool {
+	return strings.Contains(n, ".")
 }
