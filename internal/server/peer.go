@@ -22,6 +22,15 @@ func (p *Peer) closeConn(err error) {
 	p.conn.Close()
 }
 
+func (p *Peer) send(s string) error {
+	_, err := p.conn.Write([]byte(s))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p *Peer) readConn() error {
 	buf := make([]byte, 1024)
 
