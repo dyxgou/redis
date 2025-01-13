@@ -53,7 +53,7 @@ const (
 	STRING
 	FLOAT
 	BOOLEAN
-	NULL
+	NIL
 	values_end
 
 	// DATA
