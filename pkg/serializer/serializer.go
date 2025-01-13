@@ -1,6 +1,7 @@
 package serializer
 
 import (
+	"fmt"
 	"github/dyxgou/redis/pkg/lexer"
 	"github/dyxgou/redis/pkg/token"
 )
@@ -28,11 +29,15 @@ func (s *Serializer) next() {
 }
 
 func (s *Serializer) done() bool {
-	return s.curTok.Kind == token.EOF
+	return s.curTokIs(token.EOF)
 }
 
 func (s *Serializer) Serialize() (string, error) {
 	for !s.done() {
+		if s.curTokIs(token.ILLEGAL) {
+			return "", fmt.Errorf("token ilegal")
+		}
+
 		if s.curTokIs(token.BOOLEAN) {
 			cur := s.curTok
 			s.next()
