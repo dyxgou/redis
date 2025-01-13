@@ -25,7 +25,7 @@ type (
 		Token token.Token
 		Key   string
 		Value string
-		Ex    int
+		Ex    int64
 	}
 
 	// A GetDelCommand represents the "GETDEL <key>"
@@ -39,7 +39,7 @@ type (
 		Token token.Token
 		Key   string
 		Value Expression
-		Ex    int
+		Ex    int64
 
 		// Sets the key if not exists
 		Nx bool
@@ -287,13 +287,13 @@ func (fo *FloatExpr) String() string      { return fo.Token.Literal }
 
 func (se *StringExpr) Value() string { return se.Token.Literal }
 
-func writeNumArg(sb *strings.Builder, arg string, n int) {
+func writeNumArg[Num int | int64](sb *strings.Builder, arg string, n Num) {
 	if n == 0 {
 		return
 	}
 
 	sb.WriteString(arg)
-	sb.WriteString(strconv.Itoa(n))
+	sb.WriteString(strconv.FormatInt(int64(n), 10))
 	sb.WriteByte(' ')
 }
 

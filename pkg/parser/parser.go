@@ -440,7 +440,7 @@ func (p *Parser) parseSetArgs(sc *ast.SetCommand) error {
 	return nil
 }
 
-func (p *Parser) parseExArg() (int, error) {
+func (p *Parser) parseExArg() (int64, error) {
 	p.next()
 	if err := p.checkCRLF(); err != nil {
 		return 0, err
@@ -451,7 +451,7 @@ func (p *Parser) parseExArg() (int, error) {
 	}
 
 	p.next()
-	n, err := strconv.Atoi(p.curTok.Literal)
+	n, err := strconv.ParseInt(p.curTok.Literal, 10, 64)
 	if err != nil {
 		return 0, err
 	}
