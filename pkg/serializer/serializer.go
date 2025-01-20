@@ -20,7 +20,6 @@ func New(input string) *Serializer {
 	}
 
 	s.next()
-
 	return s
 }
 
@@ -49,7 +48,7 @@ func (s *Serializer) Serialize() (string, error) {
 			s.next()
 		}
 
-		if token.IsKeyword(s.curTok.Kind) || s.curTokIs(token.STRING) {
+		if token.IsKeyword(s.curTok.Kind) || s.curTokIs(token.BULKSTRING) {
 			if err := s.w.writeWord(s.curTok); err != nil {
 				return "", err
 			}
