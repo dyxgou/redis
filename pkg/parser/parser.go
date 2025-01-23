@@ -452,6 +452,10 @@ func (p *Parser) parseExArg() (int64, error) {
 
 	p.next()
 	n, err := strconv.ParseInt(p.curTok.Literal, 10, 64)
+	if n < 1 {
+		return 0, fmt.Errorf("EX argument cannot be less than 1. got=%d", n)
+	}
+
 	if err != nil {
 		return 0, err
 	}

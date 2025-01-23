@@ -41,6 +41,16 @@ func TestSetCommand(t *testing.T) {
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n,1.1\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.FloatExpr{Token: token.New(token.FLOAT, ","), Value: 1.1},
+		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n(123123123123\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.BigIntegerExpr{Token: token.New(token.BIGINT, "("), Value: 123123123123},
+		}},
 		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$8\r\n\"my string\"\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
