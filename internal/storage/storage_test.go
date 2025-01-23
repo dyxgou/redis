@@ -1,7 +1,9 @@
 package storage
 
 import (
-	"sync"
+	"fmt"
+	"github/dyxgou/redis/pkg/ast"
+	"github/dyxgou/redis/pkg/token"
 	"testing"
 )
 
@@ -10,74 +12,69 @@ func TestMultipleWrite(t *testing.T) {
 
 	tests := []struct {
 		key string
-		val any
+		val ast.Expression
 	}{
-		{key: "key1", val: 1},
-		{key: "key2", val: "string"},
-		{key: "key3", val: true},
-		{key: "key4", val: false},
-		{key: "key5", val: false},
-		{key: "key6", val: int64(123)},
+		{key: "intKey", val: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1}},
+		{key: "strKey", val: &ast.StringExpr{Token: token.New(token.BULKSTRING, "string")}},
+		{key: "trueKey", val: &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: true}},
+		{key: "trueKey", val: &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: false}},
+		{key: "bigIntKey", val: &ast.BigIntegerExpr{Token: token.New(token.BIGINT, "("), Value: 123123123123}},
 	}
 
-	var wg sync.WaitGroup
-	for _, tt := range tests {
-		wg.Add(1)
+	for i, tt := range tests {
+		name := fmt.Sprintf("inserting query=%d", i)
 
-		go func(k string, v any) {
-			defer wg.Done()
-			if err := s.Set(k, v); err != nil {
-				t.Error(err)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			s.Set(tt.key, tt.val)
+
+			val, ok := s.Get(tt.key)
+			if !ok {
+				t.Errorf("val not found. key=%q", tt.key)
 			}
-		}(tt.key, tt.val)
+
+			assertValue(t, val, NewValue(tt.val))
+		})
 	}
 
-	for _, tt := range tests {
-		v, ok := s.Get(tt.key)
-		if !ok {
-			t.Errorf("value of key=%q not exists", tt.key)
-		}
-
-		assertValue(t, v, tt.val)
-	}
 }
 
-func assertValue(t *testing.T, v any, expected any) {
+func assertValue(t *testing.T, v Value, expected Value) {
 	switch v := v.(type) {
 	case *Int:
-		i, ok := expected.(int)
+		i, ok := expected.(*Int)
 		if !ok {
 			t.Error("expected is not an int type")
 		}
-		assertInt(t, v, i)
+		assertInt(t, v, i.Value)
 	case *Int64:
-		i, ok := expected.(int64)
+		i, ok := expected.(*Int64)
 		if !ok {
 			t.Error("expected is not an int64 type")
 		}
 
-		assertInt64(t, v, i)
+		assertInt64(t, v, i.Value)
 	case *Float:
-		f, ok := expected.(float64)
+		f, ok := expected.(*Float)
 		if !ok {
 			t.Error("expected is not an float type")
 		}
 
-		assertFloat(t, v, f)
+		assertFloat(t, v, f.Value)
 	case *Bool:
-		b, ok := expected.(bool)
+		b, ok := expected.(*Bool)
 		if !ok {
 			t.Error("expected is not an int type")
 		}
 
-		assertBool(t, v, b)
+		assertBool(t, v, b.Value)
 	case *String:
-		s, ok := expected.(string)
+		s, ok := expected.(*String)
 		if !ok {
 			t.Error("expected is not an int type")
 		}
 
-		assertString(t, v, s)
+		assertString(t, v, s.Value)
 	default:
 		t.Errorf("value not supported. got=%+v", v)
 	}
