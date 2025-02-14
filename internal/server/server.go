@@ -16,10 +16,10 @@ type Config struct {
 
 type Server struct {
 	Config
-	ln     net.Listener
 	quitch chan os.Signal
 
 	msgch chan []byte
+	ln    net.Listener
 
 	peers     map[*Peer]struct{}
 	addPeerCh chan *Peer
