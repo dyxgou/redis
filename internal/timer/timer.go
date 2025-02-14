@@ -10,7 +10,7 @@ type timestamp struct {
 	time int64
 }
 
-func newTimestamp(key string, t int64) timestamp {
+func NewTimestamp(key string, t int64) timestamp {
 	return timestamp{
 		key:  key,
 		time: t,

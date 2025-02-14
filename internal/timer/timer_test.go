@@ -47,7 +47,7 @@ func TestTimerInsert(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ts := newTimestamp(tt.key, tt.time)
+		ts := NewTimestamp(tt.key, tt.time)
 		timer.Insert(ts)
 	}
 
