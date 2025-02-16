@@ -1,6 +1,8 @@
 package timer
 
 import (
+	"iter"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -22,9 +24,15 @@ type Timer struct {
 	N  int
 }
 
-func New() *Timer {
+func New(sizes ...int) *Timer {
+	var size = 1024
+
+	if len(sizes) != 0 {
+		size = sizes[0]
+	}
+
 	return &Timer{
-		ts: make([]timestamp, 1024),
+		ts: make([]timestamp, size),
 		N:  0,
 	}
 }
@@ -37,6 +45,26 @@ func (t *Timer) Insert(ts timestamp) {
 	t.ts[t.N] = ts
 	t.shiftUp(t.N)
 	t.N++
+}
+
+func pop(s *[]int) int {
+	n := len(*s)
+	last := (*s)[n-1]
+	*s = slices.Delete(*s, n-1, n)
+
+	return last
+}
+
+func (t *Timer) Exited(elapsed int64) iter.Seq[timestamp] {
+	return func(yield func(timestamp) bool) {
+		for t.N > 0 && t.ts[0].time <= elapsed {
+			v := t.Remove()
+
+			if !yield(v) {
+				return
+			}
+		}
+	}
 }
 
 func (t *Timer) Remove() timestamp {
