@@ -41,7 +41,7 @@ func (t *Timer) IsEmpty() bool {
 	return t.N == 0
 }
 
-func (t *Timer) Insert(ts timestamp) {
+func (t *Timer) insert(ts timestamp) {
 	t.ts[t.N] = ts
 	t.shiftUp(t.N)
 	t.N++

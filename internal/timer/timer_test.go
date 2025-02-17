@@ -49,7 +49,7 @@ func TestTimerInsert(t *testing.T) {
 
 	for _, tt := range tests {
 		ts := NewTimestamp(tt.key, tt.time)
-		timer.Insert(ts)
+		timer.insert(ts)
 	}
 
 	for _, tt := range slices.Backward(tests) {
@@ -71,7 +71,7 @@ func FuzzTimer(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, key string, ti int64) {
 		ts := NewTimestamp(key, ti)
-		timer.Insert(ts)
+		timer.insert(ts)
 	})
 }
 
@@ -107,7 +107,7 @@ func TestTimerExisted(t *testing.T) {
 	}
 
 	for _, val := range tests {
-		timer.Insert(NewTimestamp(val.key, val.time))
+		timer.insert(NewTimestamp(val.key, val.time))
 	}
 
 	t.Logf("timer=%+v", timer.ts[:timer.N])
