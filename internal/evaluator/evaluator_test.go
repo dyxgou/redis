@@ -34,10 +34,45 @@ func TestEvalGetNilKey(t *testing.T) {
 	res, err := e.Eval(tt.cmd)
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	if res != tt.expectedVal {
 		t.Errorf("result expected=%q. got=%q", tt.expectedVal, res)
+	}
+}
+
+func TestEvalSet(t *testing.T) {
+	tt := struct {
+		cmd      *ast.SetCommand
+		expected *storage.Int
+	}{
+		cmd: &ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "keyInt",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+		},
+		expected: &storage.Int{Value: 1},
+	}
+
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != opSuccesful {
+		t.Errorf("operation SET was not succesful. res=%q", res)
+		return
+	}
+
+	val, ok := e.s.Get(tt.cmd.Key)
+	if !ok {
+		t.Errorf("key=%q not found", tt.cmd.Key)
+	}
+
+	if val.String() != tt.expected.String() {
+		t.Errorf("value expected=%q. got=%q", tt.expected.String(), val.String())
 	}
 }
 

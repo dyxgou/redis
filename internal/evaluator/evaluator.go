@@ -12,13 +12,13 @@ const opSuccesful = "OK"
 
 type Evaluator struct {
 	s *storage.Storage
-	t *timer.Timer
+	t *timer.Ticker
 }
 
 func New() *Evaluator {
 	return &Evaluator{
 		s: storage.New(),
-		t: timer.New(),
+		t: timer.NewTicker(),
 	}
 }
 
@@ -59,7 +59,7 @@ func (e *Evaluator) evalSetCommand(sc *ast.SetCommand) (string, error) {
 	}
 
 	if sc.Ex >= 1 {
-		e.t.Insert(timer.NewTimestamp(sc.Key, sc.Ex))
+		e.t.Insert(sc.Key, sc.Ex)
 	}
 
 	return opSuccesful, nil
