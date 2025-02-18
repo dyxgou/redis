@@ -16,8 +16,6 @@ type Evaluator struct {
 	t *timer.Ticker
 }
 
-func New() *Evaluator {
-	return &Evaluator{
 func New(ctx context.Context) *Evaluator {
 	e := &Evaluator{
 		s: storage.New(),
@@ -33,10 +31,15 @@ func New(ctx context.Context) *Evaluator {
 func (e *Evaluator) deleteKey(key string) {
 	e.s.Delete(key)
 }
+
 func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 	switch cmd := cmd.(type) {
 	case *ast.GetCommand:
 		return e.evalGetCommand(cmd)
+	case *ast.GetDelCommand:
+		return e.evalGetDelCommand(cmd)
+	case *ast.GetSetCommand:
+		return e.evalGetSetCommand(cmd)
 	case *ast.SetCommand:
 		return e.evalSetCommand(cmd)
 	}
@@ -53,6 +56,26 @@ func (e *Evaluator) evalGetCommand(gc *ast.GetCommand) (string, error) {
 	}
 
 	return val.String(), nil
+}
+
+func (e *Evaluator) evalGetDelCommand(gc *ast.GetDelCommand) (string, error) {
+	val, ok := e.s.Get(gc.Key)
+	if !ok {
+		return storage.Nil.String(), nil
+	}
+
+	defer e.s.Delete(gc.Key)
+	return val.String(), nil
+}
+
+func (e *Evaluator) evalGetSetCommand(gc *ast.GetSetCommand) (string, error) {
+	if err := e.s.Set(gc.Key, gc.Value); err != nil {
+		return "", err
+	}
+
+	res, _ := e.s.Get(gc.Key)
+
+	return res.String(), nil
 }
 
 func (e *Evaluator) evalSetCommand(sc *ast.SetCommand) (string, error) {

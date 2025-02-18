@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"context"
 	"fmt"
 	"github/dyxgou/redis/internal/storage"
 	"github/dyxgou/redis/pkg/ast"
@@ -12,7 +13,7 @@ import (
 var e *Evaluator
 
 func TestMain(m *testing.M) {
-	e = New()
+	e = New(context.Background())
 
 	code := m.Run()
 
@@ -51,6 +52,41 @@ func TestEvalSet(t *testing.T) {
 			Token: token.New(token.SET, "SET"),
 			Key:   "keyInt",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+		},
+		expected: &storage.Int{Value: 1},
+	}
+
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != opSuccesful {
+		t.Errorf("operation SET was not succesful. res=%q", res)
+		return
+	}
+
+	val, ok := e.s.Get(tt.cmd.Key)
+	if !ok {
+		t.Errorf("key=%q not found", tt.cmd.Key)
+	}
+
+	if val.String() != tt.expected.String() {
+		t.Errorf("value expected=%q. got=%q", tt.expected.String(), val.String())
+	}
+}
+
+func TestEvalSetEx(t *testing.T) {
+	tt := struct {
+		cmd      *ast.SetCommand
+		expected *storage.Int
+	}{
+		cmd: &ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "keyInt",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+			Ex:    1,
 		},
 		expected: &storage.Int{Value: 1},
 	}
@@ -133,5 +169,58 @@ func TestEvalGetNotNil(t *testing.T) {
 				t.Errorf("val expected=%q. got=%q", val.String(), expected.String())
 			}
 		})
+	}
+}
+
+func TestEvalGetSet(t *testing.T) {
+	tt := struct {
+		cmd      *ast.GetSetCommand
+		expected *storage.Int
+	}{
+		cmd: &ast.GetSetCommand{
+			Token: token.New(token.GETSET, "GETSET"),
+			Key:   "keyInt",
+			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
+		},
+		expected: &storage.Int{Value: 1},
+	}
+
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != tt.expected.String() {
+		t.Errorf("GETSET value expected=%q. got=%q", tt.expected.String(), res)
+	}
+}
+
+func TestEvalGetDel(t *testing.T) {
+	tt := struct {
+		cmd      *ast.GetDelCommand
+		expected *storage.String
+	}{
+		cmd: &ast.GetDelCommand{
+			Token: token.New(token.GETDEL, "GELDEl"),
+			Key:   "valkey",
+		},
+		expected: &storage.String{Value: "value deleted"},
+	}
+	e.s.Set("valkey", &ast.StringExpr{Token: token.New(token.BULKSTRING, "value deleted")})
+
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != tt.expected.String() {
+		t.Errorf("res expected=%q. got=%q", res, tt.expected.String())
+	}
+
+	ok := e.s.Exists(tt.cmd.Key)
+	if ok {
+		t.Errorf("key=%q still exists after GETDEL command", tt.cmd.Key)
 	}
 }
