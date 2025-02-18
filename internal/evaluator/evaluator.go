@@ -17,9 +17,16 @@ type Evaluator struct {
 
 func New() *Evaluator {
 	return &Evaluator{
+func New(ctx context.Context) *Evaluator {
+	e := &Evaluator{
 		s: storage.New(),
-		t: timer.NewTicker(),
 	}
+
+	t := timer.NewTicker()
+	e.t = t
+	go t.Init(ctx, e.deleteKey)
+
+	return e
 }
 
 func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
