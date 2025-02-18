@@ -8,6 +8,7 @@ import (
 	"github/dyxgou/redis/pkg/token"
 	"os"
 	"testing"
+	"time"
 )
 
 var e *Evaluator
@@ -110,6 +111,13 @@ func TestEvalSetEx(t *testing.T) {
 	if val.String() != tt.expected.String() {
 		t.Errorf("value expected=%q. got=%q", tt.expected.String(), val.String())
 	}
+	t.Run("check deleted key", func(t *testing.T) {
+		t.Parallel()
+		time.Sleep(2 * time.Second)
+		if ok = e.s.Exists(tt.cmd.Key); ok {
+			t.Errorf("key=%q still exists after EX setted", tt.cmd.Key)
+		}
+	})
 }
 
 func TestEvalGetNotNil(t *testing.T) {
