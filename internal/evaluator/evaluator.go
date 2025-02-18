@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"context"
 	"fmt"
 	"github/dyxgou/redis/internal/storage"
 	"github/dyxgou/redis/internal/timer"
@@ -29,6 +30,9 @@ func New(ctx context.Context) *Evaluator {
 	return e
 }
 
+func (e *Evaluator) deleteKey(key string) {
+	e.s.Delete(key)
+}
 func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 	switch cmd := cmd.(type) {
 	case *ast.GetCommand:
