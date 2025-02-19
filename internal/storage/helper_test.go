@@ -3,8 +3,8 @@ package storage
 import "testing"
 
 func assertInt(t *testing.T, v *Int, expected int) {
-	if v.kind() != IntKind {
-		t.Errorf("Int kind expected=%d ('INT'). got=%d", IntKind, v.kind())
+	if v.Kind() != IntKind {
+		t.Errorf("Int kind expected=%d ('INT'). got=%d", IntKind, v.Kind())
 	}
 
 	if v.Value != expected {
@@ -13,8 +13,8 @@ func assertInt(t *testing.T, v *Int, expected int) {
 }
 
 func assertBool(t *testing.T, v *Bool, expected bool) {
-	if v.kind() != boolKind {
-		t.Errorf("Bool kind expected=%d ('BOOL'). got=%d", boolKind, v.kind())
+	if v.Kind() != BoolKind {
+		t.Errorf("Bool kind expected=%d ('BOOL'). got=%d", BoolKind, v.Kind())
 	}
 
 	if v.Value != expected {
@@ -23,8 +23,8 @@ func assertBool(t *testing.T, v *Bool, expected bool) {
 }
 
 func assertInt64(t *testing.T, v *Int64, expected int64) {
-	if v.kind() != Int64Kind {
-		t.Errorf("Int64 kind expected=%d ('INT64'). got=%d", IntKind, v.kind())
+	if v.Kind() != Int64Kind {
+		t.Errorf("Int64 kind expected=%d ('INT64'). got=%d", Int64Kind, v.Kind())
 	}
 
 	if v.Value != expected {
@@ -33,8 +33,8 @@ func assertInt64(t *testing.T, v *Int64, expected int64) {
 }
 
 func assertFloat(t *testing.T, v *Float, expected float64) {
-	if v.kind() != floatKind {
-		t.Errorf("Float kind expected=%d ('FLOAT'). got=%d", IntKind, v.kind())
+	if v.Kind() != FloatKind {
+		t.Errorf("Float kind expected=%d ('FLOAT'). got=%d", FloatKind, v.Kind())
 	}
 
 	if v.Value != expected {
@@ -42,8 +42,8 @@ func assertFloat(t *testing.T, v *Float, expected float64) {
 	}
 }
 func assertString(t *testing.T, v *String, expected string) {
-	if v.kind() != stringKind {
-		t.Errorf("Float kind expected=%d ('STRING'). got=%d", IntKind, v.kind())
+	if v.Kind() != StringKind {
+		t.Errorf("Float kind expected=%d ('STRING'). got=%d", StringKind, v.Kind())
 	}
 
 	if v.Value != expected {
