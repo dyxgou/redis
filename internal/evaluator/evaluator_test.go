@@ -120,6 +120,47 @@ func TestEvalSetEx(t *testing.T) {
 	})
 }
 
+func TestEvalSetXX(t *testing.T) {
+	tt := struct {
+		cmd      *ast.SetCommand
+		expected *storage.Bool
+	}{
+		cmd: &ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "keyBool",
+			Value: &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: true},
+			Xx:    true,
+		},
+		expected: &storage.Bool{Value: true},
+	}
+
+	t.Run("SETXX resets the last value", func(t *testing.T) {
+		e.s.Set(tt.cmd.Key, &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: false})
+
+		res, err := e.Eval(tt.cmd)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		if res != opSuccesful {
+			t.Errorf("SETXX operation wasn't succesful. got=%q", res)
+		}
+
+		val, _ := e.s.Get(tt.cmd.Key)
+		if val.String() != tt.expected.String() {
+			t.Errorf("SETXX value expected=%q. got=%q", val.String(), tt.expected.String())
+		}
+	})
+
+	t.Run("SETXX throws an error if the key does not exists", func(t *testing.T) {
+		_, err := e.Eval(tt.cmd)
+		if err == nil {
+			t.Errorf("SETXX expected key not set err")
+		}
+	})
+}
+
 func TestEvalGetNotNil(t *testing.T) {
 	tests := []struct {
 		key string
