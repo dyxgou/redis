@@ -23,6 +23,13 @@ func New(input string) *Lexer {
 	return l
 }
 
+func (l *Lexer) Reset(input string) {
+	l.input = input
+	l.pos = 0
+	l.readPos = 0
+	l.next()
+}
+
 func (l *Lexer) next() {
 	if l.readPos >= len(l.input) {
 		l.ch = byte(token.EOF)

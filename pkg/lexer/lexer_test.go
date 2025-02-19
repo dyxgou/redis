@@ -145,8 +145,14 @@ func TestNextToken(t *testing.T) {
 		},
 	}
 
+	var l *Lexer
+
 	for _, tt := range tests {
-		l := New(tt.input)
+		if l == nil {
+			l = New(tt.input)
+		} else {
+			l.Reset(tt.input)
+		}
 
 		for _, expTok := range tt.expectedTokens {
 			tok := l.NextToken()
