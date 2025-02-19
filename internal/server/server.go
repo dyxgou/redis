@@ -1,6 +1,8 @@
 package server
 
 import (
+	"context"
+	"github/dyxgou/redis/internal/evaluator"
 	"log/slog"
 	"net"
 	"os"
@@ -18,20 +20,16 @@ type Server struct {
 	Config
 	quitch chan os.Signal
 
-	msgch chan []byte
-	ln    net.Listener
+	ln net.Listener
 
-	peers     map[*Peer]struct{}
-	addPeerCh chan *Peer
+	e *evaluator.Evaluator
 }
 
 func New(cfg Config) *Server {
 	return &Server{
-		Config:    cfg,
-		quitch:    make(chan os.Signal, 1),
-		msgch:     make(chan []byte),
-		peers:     make(map[*Peer]struct{}),
-		addPeerCh: make(chan *Peer),
+		Config: cfg,
+		quitch: make(chan os.Signal, 1),
+		e:      evaluator.New(context.Background()),
 	}
 }
 
@@ -59,15 +57,9 @@ func (s *Server) close() {
 }
 
 func (s *Server) loop() {
-	for {
-		select {
-		case peer := <-s.addPeerCh:
-			s.peers[peer] = struct{}{}
-		case msg := <-s.msgch:
-			slog.Info("new message", "msg", string(msg))
-		case <-s.quitch:
-			s.close()
-		}
+	select {
+	case <-s.quitch:
+		s.close()
 	}
 }
 
@@ -85,12 +77,11 @@ func (s *Server) acceptLoop() error {
 }
 
 func (s *Server) handleConn(conn net.Conn) {
-	peer := NewPeer(conn, s.msgch)
+	peer := NewPeer(conn, s.e)
 
 	slog.Info("connection stablished", "remoteAddr", conn.RemoteAddr())
-	s.addPeerCh <- peer
 
 	if err := peer.readConn(); err != nil {
-		peer.closeConn(err)
+		slog.Error("read conn", "addr", conn.RemoteAddr(), "err", err)
 	}
 }
