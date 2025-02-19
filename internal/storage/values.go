@@ -16,16 +16,16 @@ type values interface {
 type valueKind byte
 
 const (
-	intKind valueKind = iota
-	int64Kind
-	boolKind
-	stringKind
-	floatKind
-	nilKind
+	IntKind valueKind = iota
+	Int64Kind
+	BoolKind
+	StringKind
+	FloatKind
+	NilKind
 )
 
 type Value interface {
-	kind() valueKind
+	Kind() valueKind
 	String() string
 }
 
@@ -70,12 +70,12 @@ type (
 	NilVal struct{}
 )
 
-func (n *NilVal) kind() valueKind { return nilKind }
-func (i *Int) kind() valueKind    { return intKind }
-func (b *Bool) kind() valueKind   { return boolKind }
-func (f *Float) kind() valueKind  { return floatKind }
-func (i *Int64) kind() valueKind  { return int64Kind }
-func (s *String) kind() valueKind { return stringKind }
+func (n *NilVal) Kind() valueKind { return NilKind }
+func (i *Int) Kind() valueKind    { return IntKind }
+func (b *Bool) Kind() valueKind   { return BoolKind }
+func (f *Float) Kind() valueKind  { return FloatKind }
+func (i *Int64) Kind() valueKind  { return Int64Kind }
+func (s *String) Kind() valueKind { return StringKind }
 
 func (n *NilVal) String() string { return "(nil)" }
 func (i *Int) String() string    { return strconv.Itoa(i.Value) }
