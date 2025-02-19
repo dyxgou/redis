@@ -120,6 +120,40 @@ func TestEvalSetEx(t *testing.T) {
 	})
 }
 
+func TestEvalGetEx(t *testing.T) {
+	tt := struct {
+		cmd      *ast.GetExCommand
+		expected *storage.Int
+	}{
+		cmd: &ast.GetExCommand{
+			Token: token.New(token.GETEX, "GETEX"),
+			Key:   "keyInt",
+			Ex:    1,
+		},
+		expected: &storage.Int{Value: 1},
+	}
+	e.s.Set(tt.cmd.Key, &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1})
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Logf("res=%q. expected=%q", res, tt.expected.String())
+	if res != tt.expected.String() {
+		t.Errorf("res expected=%q. got=%q", tt.expected.String(), res)
+	}
+
+	t.Run("checking if key was deleted", func(t *testing.T) {
+		t.Parallel()
+
+		time.Sleep(2 * time.Second)
+
+		if ok := e.s.Exists(tt.cmd.Key); ok {
+			t.Errorf("key=%q still exists after EX was exited", tt.cmd.Key)
+		}
+	})
+}
 func TestEvalSetXX(t *testing.T) {
 	tt := struct {
 		cmd      *ast.SetCommand

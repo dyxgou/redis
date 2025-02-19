@@ -6,7 +6,6 @@ import (
 	"github/dyxgou/redis/internal/storage"
 	"github/dyxgou/redis/internal/timer"
 	"github/dyxgou/redis/pkg/ast"
-	"log/slog"
 )
 
 const opSuccesful = "OK"
@@ -42,6 +41,8 @@ func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 		return e.evalGetSetCommand(cmd)
 	case *ast.SetCommand:
 		return e.evalSetCommand(cmd)
+	case *ast.GetExCommand:
+		return e.evalGetExCommand(cmd)
 	}
 
 	return "", fmt.Errorf("command not supported for evaluation. got=%T", cmd)
@@ -50,6 +51,12 @@ func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 func (e *Evaluator) evalGetCommand(gc *ast.GetCommand) (string, error) {
 	val, ok := e.s.Get(gc.Key)
 	slog.Info("GET Command", "val", val)
+func (e *Evaluator) evalGetExCommand(gc *ast.GetExCommand) (string, error) {
+	if gc.Ex < 1 {
+		return "", fmt.Errorf("flag EX should have a value greater than 1. EX=%d", gc.Ex)
+	}
+	e.t.Insert(gc.Key, gc.Ex)
+	val, ok := e.s.Get(gc.Key)
 
 	if !ok {
 		return storage.Nil.String(), nil
