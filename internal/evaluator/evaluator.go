@@ -6,6 +6,7 @@ import (
 	"github/dyxgou/redis/internal/storage"
 	"github/dyxgou/redis/internal/timer"
 	"github/dyxgou/redis/pkg/ast"
+	"strconv"
 )
 
 const opSuccesful = "OK"
@@ -43,14 +44,61 @@ func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 		return e.evalSetCommand(cmd)
 	case *ast.GetExCommand:
 		return e.evalGetExCommand(cmd)
+	case *ast.IncrCommand:
+		return e.evalIncrCommand(cmd)
+	case *ast.IncrByCommand:
+		return e.evalIncrByCommand(cmd)
 	}
 
 	return "", fmt.Errorf("command not supported for evaluation. got=%T", cmd)
 }
 
+func (e *Evaluator) evalIncrCommand(inc *ast.IncrCommand) (string, error) {
+	val, ok := e.s.Get(inc.Key)
+	if !ok {
+		return "", fmt.Errorf("key=%q not found", inc.Key)
+	}
+
+	switch intVal := val.(type) {
+	case *storage.Int:
+		intVal.Value++
+		return strconv.Itoa(intVal.Value), nil
+	case *storage.Int64:
+		intVal.Value++
+		return strconv.FormatInt(intVal.Value, 10), nil
+	}
+
+	return "", fmt.Errorf("val kind is not numeric. val=%q", val.String())
+}
+
+func (e *Evaluator) evalIncrByCommand(inc *ast.IncrByCommand) (string, error) {
+	val, ok := e.s.Get(inc.Key)
+	if !ok {
+		return "", fmt.Errorf("key=%q not found", inc.Key)
+	}
+
+	switch intVal := val.(type) {
+	case *storage.Int:
+		intVal.Value += inc.Increment
+		return strconv.Itoa(intVal.Value), nil
+	case *storage.Int64:
+		intVal.Value += int64(inc.Increment)
+		return strconv.FormatInt(intVal.Value, 10), nil
+	}
+
+	return "", fmt.Errorf("val kind is not numeric. val=%q", val.String())
+}
+
 func (e *Evaluator) evalGetCommand(gc *ast.GetCommand) (string, error) {
 	val, ok := e.s.Get(gc.Key)
-	slog.Info("GET Command", "val", val)
+
+	if !ok {
+		return storage.Nil.String(), nil
+	}
+
+	return val.String(), nil
+}
+
 func (e *Evaluator) evalGetExCommand(gc *ast.GetExCommand) (string, error) {
 	if gc.Ex < 1 {
 		return "", fmt.Errorf("flag EX should have a value greater than 1. EX=%d", gc.Ex)
