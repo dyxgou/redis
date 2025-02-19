@@ -105,9 +105,14 @@ func TestSetCommand(t *testing.T) {
 		}},
 	}
 
+	var p *Parser
+
 	for _, tt := range tests {
-		l := lexer.New(tt.input)
-		p := New(l)
+		if p == nil {
+			p = New(lexer.New(tt.input))
+		} else {
+			p.Reset(tt.input)
+		}
 
 		cmd, err := p.Parse()
 		if err != nil {

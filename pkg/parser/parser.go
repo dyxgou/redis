@@ -21,7 +21,7 @@ type Parser struct {
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l, len: 100}
+	p := &Parser{l: l}
 	p.next()
 	p.next()
 
@@ -31,11 +31,16 @@ func New(l *lexer.Lexer) *Parser {
 func (p *Parser) next() {
 	p.curTok = p.readTok
 	p.readTok = p.l.NextToken()
-	// slog.Info("toks", "cur", p.curTok, "read", p.readTok)
 }
 
 func (p *Parser) done() bool {
 	return p.curTok.Kind == token.EOF
+}
+
+func (p *Parser) Reset(input string) {
+	p.l.Reset(input)
+	p.next()
+	p.next()
 }
 
 func (p *Parser) Parse() (ast.Command, error) {
