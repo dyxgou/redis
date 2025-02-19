@@ -154,6 +154,45 @@ func TestEvalGetEx(t *testing.T) {
 		}
 	})
 }
+func TestEvalSetNX(t *testing.T) {
+	tt := struct {
+		cmd      *ast.SetCommand
+		expected *storage.Bool
+	}{
+		cmd: &ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "keyNXBool",
+			Value: &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: false},
+			Nx:    true,
+		},
+		expected: &storage.Bool{Value: false},
+	}
+
+	t.Run("SETNX sets the value", func(t *testing.T) {
+		res, err := e.Eval(tt.cmd)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		if res != opSuccesful {
+			t.Errorf("SETNX operation wasn't succesful. got=%q", res)
+		}
+
+		val, _ := e.s.Get(tt.cmd.Key)
+		if val.String() != tt.expected.String() {
+			t.Errorf("SETNX value expected=%q. got=%q", val.String(), tt.expected.String())
+		}
+	})
+
+	t.Run("SETNX throws an error if the key does not exists", func(t *testing.T) {
+		_, err := e.Eval(tt.cmd)
+		if err == nil {
+			t.Errorf("SETNX expected key not set err")
+		}
+	})
+}
+
 func TestEvalSetXX(t *testing.T) {
 	tt := struct {
 		cmd      *ast.SetCommand
@@ -168,6 +207,12 @@ func TestEvalSetXX(t *testing.T) {
 		expected: &storage.Bool{Value: true},
 	}
 
+	t.Run("SETXX throws an error if the key does not exists", func(t *testing.T) {
+		_, err := e.Eval(tt.cmd)
+		if err == nil {
+			t.Errorf("SETXX expected key not set err")
+		}
+	})
 	t.Run("SETXX resets the last value", func(t *testing.T) {
 		e.s.Set(tt.cmd.Key, &ast.BooleanExpr{Token: token.New(token.BOOLEAN, "#"), Value: false})
 
