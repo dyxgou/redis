@@ -71,33 +71,33 @@ func TestSetCommand(t *testing.T) {
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 		}},
-		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n:3600\r\n", ast.SetCommand{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\n$2\r\nEX\r\n:3600\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 			Ex:    3600,
 		}},
-		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n:3600\r\nXX\r\n", ast.SetCommand{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\n$2\r\nEX\r\n:3600\r\n$2\r\nXX\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 			Ex:    3600,
 			Xx:    true,
 		}},
-		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nEX\r\n:3600\r\nNX\r\n", ast.SetCommand{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\n$2\r\nEX\r\n:3600\r\n$2\r\nNX\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 			Ex:    3600,
 			Nx:    true,
 		}},
-		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nNX\r\n", ast.SetCommand{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\n$2\r\nNX\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 			Nx:    true,
 		}},
-		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\nXX\r\n", ast.SetCommand{
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:1\r\n$2\r\nXX\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
@@ -116,6 +116,7 @@ func TestSetCommand(t *testing.T) {
 
 		cmd, err := p.Parse()
 		if err != nil {
+			t.Logf("msg=%q", tt.input)
 			t.Error(err)
 			return
 		}

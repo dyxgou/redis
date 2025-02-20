@@ -406,8 +406,8 @@ func (p *Parser) parseIncrByCommand() (*ast.IncrByCommand, error) {
 }
 
 func (p *Parser) parseSetArgs(sc *ast.SetCommand) error {
-	if !token.IsArg(p.curTok.Kind) {
-		return fmt.Errorf("SET expected args token kinds. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
+	if err := p.skipBulkString(); err != nil {
+		return err
 	}
 
 	switch p.curTok.Kind {
