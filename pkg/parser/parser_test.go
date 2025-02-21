@@ -394,7 +394,7 @@ func TestParseString(t *testing.T) {
 		{
 			input: "$5\r\nstring\r\n",
 			expected: ast.StringExpr{
-				Token: token.New(token.BULKSTRING, "string"),
+				Token: token.New(token.IDENT, "string"),
 			},
 		},
 	}
