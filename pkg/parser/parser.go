@@ -484,14 +484,17 @@ func (p *Parser) parseValue() (ast.Expression, error) {
 	switch p.curTok.Kind {
 	case token.BOOLEAN:
 		return p.parseBoolean()
+	case token.STRING:
+		return p.parseSimpleString()
 	case token.BULKSTRING:
-		return p.parseString()
+		return p.parseBulkString()
 	case token.INTEGER:
 		return p.parseInteger()
 	case token.BIGINT:
 		return p.parseBigInt()
 	case token.FLOAT:
 		return p.parseFloat()
+
 	}
 
 	return nil, fmt.Errorf("curTok kind is not a value. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
@@ -516,7 +519,13 @@ func (p *Parser) parseBoolean() (*ast.BooleanExpr, error) {
 	return be, nil
 }
 
-func (p *Parser) parseString() (*ast.StringExpr, error) {
+func (p *Parser) parseSimpleString() (*ast.StringExpr, error) {
+	se := &ast.StringExpr{Token: p.curTok}
+
+	return se, nil
+}
+
+func (p *Parser) parseBulkString() (*ast.StringExpr, error) {
 	if err := p.skipBulkString(); err != nil {
 		return nil, err
 	}

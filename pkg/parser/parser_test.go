@@ -386,15 +386,15 @@ func TestParseString(t *testing.T) {
 		expected ast.StringExpr
 	}{
 		{
-			input: "$7\r\n\"string 1\"",
+			input: "+8\r\nstring 2\r\n",
 			expected: ast.StringExpr{
-				Token: token.New(token.BULKSTRING, "string 1"),
+				Token: token.New(token.STRING, "string 2"),
 			},
 		},
 		{
-			input: "$7\r\n\"string 2\"",
+			input: "$5\r\nstring\r\n",
 			expected: ast.StringExpr{
-				Token: token.New(token.BULKSTRING, "string 2"),
+				Token: token.New(token.BULKSTRING, "string"),
 			},
 		},
 	}
