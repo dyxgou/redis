@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github/dyxgou/redis/pkg/token"
 	"log/slog"
+	"strconv"
 )
 
 const qoute = '"'
+const simpleString = '+'
 
 type Lexer struct {
 	input   string
@@ -53,16 +55,29 @@ func (l *Lexer) NextToken() token.Token {
 		return token.New(token.CRLF, token.EndCRLF)
 	}
 
+	var t token.Token
+
+	if l.ch == simpleString {
+		lit, err := l.readSimpleString()
+		if err != nil {
+			slog.Error("reading simple string", "err", err)
+			t.Kind = token.ILLEGAL
+			t.Literal = ""
+		}
+
+		t.Kind = token.STRING
+		t.Literal = lit
+		return t
+	}
+
 	if k, ok := token.GetKindWithSymbol(l.ch); ok {
 		t := token.New(k, string(l.ch))
 		l.next()
 		return t
 	}
 
-	var t token.Token
-
 	if l.ch == qoute {
-		t.Kind = token.BULKSTRING
+		t.Kind = token.STRING
 		t.Literal = l.readString()
 		l.next()
 		return t
@@ -165,4 +180,29 @@ func (l *Lexer) readString() string {
 	}
 
 	return l.input[pos:l.pos]
+}
+
+func (l *Lexer) readSimpleString() (string, error) {
+	l.next()
+	nStr, err := l.readNumber()
+	if err != nil {
+		return "", err
+	}
+
+	n, err := strconv.Atoi(nStr)
+	if err != nil {
+		return "", err
+	}
+
+	isCRLF := l.ch == '\r' && l.peekChar() == '\n'
+	if !isCRLF {
+		return "", fmt.Errorf("expected CRLF after symbol='+'. got=%q", l.ch)
+	}
+	l.next()
+	l.next()
+	s := l.input[l.pos : l.pos+n]
+	l.readPos += n - 1
+	l.next()
+
+	return s, nil
 }

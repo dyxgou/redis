@@ -53,8 +53,8 @@ func TestTokenizeString(t *testing.T) {
 		input    string
 		expected token.Token
 	}{
-		input:    "\"value\"",
-		expected: token.New(token.BULKSTRING, "value"),
+		input:    "\"new value\"",
+		expected: token.New(token.STRING, "new value"),
 	}
 
 	l := New(tt.input)
@@ -165,5 +165,20 @@ func TestNextToken(t *testing.T) {
 				t.Errorf("token literal expected=%q. got=%q", expTok.Literal, tok.Literal)
 			}
 		}
+	}
+}
+
+func TestTokenStream(t *testing.T) {
+	tt := "GET key123 +7\r\nvalor 1\r\n"
+
+	l := New(tt)
+
+	for {
+		tok := l.NextToken()
+		if tok.Kind == token.EOF {
+			break
+		}
+
+		t.Logf("tok=%+v. len=%d", tok, len(tok.Literal))
 	}
 }
