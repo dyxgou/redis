@@ -89,6 +89,18 @@ func (w *writer) writeWord(t token.Token) error {
 	return nil
 }
 
+func (w *writer) writeSimpleString(t token.Token) error {
+	if err := w.writeSymbolWithAmount(token.STRING, len(t.Literal)); err != nil {
+		return err
+	}
+
+	w.body.WriteString(t.Literal)
+	w.writeCRLF()
+	w.len++
+
+	return nil
+}
+
 func (w *writer) writeNumber(t token.Token) error {
 	var sym token.TokenKind
 

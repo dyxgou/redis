@@ -37,6 +37,12 @@ func (s *Serializer) Serialize() (string, error) {
 			return "", fmt.Errorf("token ilegal")
 		}
 
+		if s.curTokIs(token.STRING) {
+			if err := s.w.writeSimpleString(s.curTok); err != nil {
+				return "", err
+			}
+		}
+
 		if s.curTokIs(token.BOOLEAN) {
 			cur := s.curTok
 			s.next()
