@@ -349,6 +349,28 @@ func TestEvalGetDel(t *testing.T) {
 	}
 }
 
+func TestEvalExists(t *testing.T) {
+	tt := &ast.ExistsCommand{Token: token.New(token.EXISTS, "EXISTS"), Key: "existsKey"}
+	t.Run("Ket not existed", func(t *testing.T) {
+		if ok := e.s.Exists(tt.Key); ok {
+			t.Errorf("exists got=%t", ok)
+		}
+	})
+
+	t.Run("Key existed", func(t *testing.T) {
+		err := e.s.Set(tt.Key, &ast.IntegerLit{Token: token.New(token.INTEGER, ":")})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		if ok := e.s.Exists(tt.Key); !ok {
+			t.Errorf("exists got=%t", ok)
+		}
+	})
+
+}
+
 func TestEvalIncrInt(t *testing.T) {
 	tt := struct {
 		cmd      *ast.IncrCommand

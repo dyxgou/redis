@@ -52,6 +52,8 @@ func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 		return e.evalDecrCommand(cmd)
 	case *ast.DecrByCommand:
 		return e.evalDecrByCommand(cmd)
+	case *ast.ExistsCommand:
+		return e.evalExistsCommand(cmd)
 	}
 
 	return "", fmt.Errorf("command not supported for evaluation. got=%T", cmd)
@@ -73,6 +75,12 @@ func (e *Evaluator) evalIncrCommand(inc *ast.IncrCommand) (string, error) {
 	}
 
 	return "", fmt.Errorf("val kind is not numeric. val=%q", val.String())
+}
+
+func (e *Evaluator) evalExistsCommand(ec *ast.ExistsCommand) (string, error) {
+	ok := e.s.Exists(ec.Key)
+
+	return strconv.FormatBool(ok), nil
 }
 
 func (e *Evaluator) evalDecrCommand(dec *ast.DecrCommand) (string, error) {
