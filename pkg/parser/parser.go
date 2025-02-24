@@ -33,10 +33,6 @@ func (p *Parser) next() {
 	p.readTok = p.l.NextToken()
 }
 
-func (p *Parser) done() bool {
-	return p.curTok.Kind == token.EOF
-}
-
 func (p *Parser) Reset(input string) {
 	p.l.Reset(input)
 	p.next()
@@ -80,6 +76,8 @@ func (p *Parser) parseCommand() (ast.Command, error) {
 		return p.parseDecrCommand()
 	case token.DECRBY:
 		return p.parseDecrByCommand()
+	case token.EXISTS:
+		return p.parseExistsCommand()
 	}
 
 	return nil, fmt.Errorf("command not supported. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
@@ -166,6 +164,28 @@ func (p *Parser) parseGetCommand() (*ast.GetCommand, error) {
 	getCmd.Key = key
 
 	return getCmd, nil
+}
+
+func (p *Parser) parseExistsCommand() (*ast.ExistsCommand, error) {
+	ec := &ast.ExistsCommand{Token: p.curTok}
+	p.next()
+
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	key, err := p.parseIdent()
+	if err != nil {
+		return nil, err
+	}
+
+	ec.Key = key
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	return ec, nil
 }
 
 func (p *Parser) parseSetCommand() (*ast.SetCommand, error) {

@@ -18,6 +18,18 @@ func assertGetCommand(t *testing.T, cmd ast.Command, gc *ast.GetCommand) {
 	}
 }
 
+func assertExistsCommand(t *testing.T, cmd ast.Command, ec *ast.ExistsCommand) {
+	t.Helper()
+	ecCmd, ok := cmd.(*ast.ExistsCommand)
+	if !ok {
+		t.Errorf("command expected=*ast.ExistsCommand. got=%T", cmd)
+	}
+
+	if ecCmd.Key != ec.Key {
+		t.Errorf("ecCmd key expected=%q. got=%q", ec.Key, ecCmd.Key)
+	}
+}
+
 func assertSetCommand(t *testing.T, cmd ast.Command, sc *ast.SetCommand) {
 	t.Helper()
 	setCmd, ok := cmd.(*ast.SetCommand)

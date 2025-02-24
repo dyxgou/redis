@@ -125,6 +125,28 @@ func TestSetCommand(t *testing.T) {
 	}
 }
 
+func TestParseExistsCommand(t *testing.T) {
+	tt := struct {
+		input    string
+		expected ast.ExistsCommand
+	}{
+		input: "*2\r\n$6\r\nEXISTS\r\n$4\r\nkey1\r\n",
+		expected: ast.ExistsCommand{
+			Token: token.New(token.EXISTS, "EXISTS"),
+			Key:   "key1",
+		},
+	}
+
+	p := New(lexer.New(tt.input))
+	cmd, err := p.Parse()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assertExistsCommand(t, cmd, &tt.expected)
+}
+
 func TestParseGetSetCommand(t *testing.T) {
 	tt := struct {
 		input    string
