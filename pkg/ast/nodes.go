@@ -111,6 +111,7 @@ func (inc *IncrCommand) cmdNode()   {}
 func (inc *IncrByCommand) cmdNode() {}
 func (dec *DecrCommand) cmdNode()   {}
 func (dec *DecrByCommand) cmdNode() {}
+func (ec *ExistsCommand) cmdNode()  {}
 
 func (gc *GetCommand) TokenLiteral() string     { return gc.Token.Literal }
 func (sc *SetCommand) TokenLiteral() string     { return sc.Token.Literal }
@@ -121,6 +122,7 @@ func (inc *IncrCommand) TokenLiteral() string   { return inc.Token.Literal }
 func (inc *IncrByCommand) TokenLiteral() string { return inc.Token.Literal }
 func (dec *DecrCommand) TokenLiteral() string   { return dec.Token.Literal }
 func (dec *DecrByCommand) TokenLiteral() string { return dec.Token.Literal }
+func (ec *ExistsCommand) TokenLiteral() string  { return ec.Token.Literal }
 
 func (gc *GetCommand) String() string {
 	var sb strings.Builder
@@ -234,9 +236,18 @@ func (dec *DecrByCommand) String() string {
 	sb.WriteByte(' ')
 
 	sb.WriteString(dec.Key)
-	sb.WriteByte(' ')
 
 	writeNumArg(&sb, "", dec.Decrement)
+
+	return sb.String()
+}
+
+func (ec *ExistsCommand) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(ec.Token.Literal)
+	sb.WriteByte(' ')
+	sb.WriteString(ec.Key)
 
 	return sb.String()
 }
