@@ -48,6 +48,10 @@ func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 		return e.evalIncrCommand(cmd)
 	case *ast.IncrByCommand:
 		return e.evalIncrByCommand(cmd)
+	case *ast.DecrCommand:
+		return e.evalDecrCommand(cmd)
+	case *ast.DecrByCommand:
+		return e.evalDecrByCommand(cmd)
 	}
 
 	return "", fmt.Errorf("command not supported for evaluation. got=%T", cmd)
@@ -65,6 +69,42 @@ func (e *Evaluator) evalIncrCommand(inc *ast.IncrCommand) (string, error) {
 		return strconv.Itoa(intVal.Value), nil
 	case *storage.Int64:
 		intVal.Value++
+		return strconv.FormatInt(intVal.Value, 10), nil
+	}
+
+	return "", fmt.Errorf("val kind is not numeric. val=%q", val.String())
+}
+
+func (e *Evaluator) evalDecrCommand(dec *ast.DecrCommand) (string, error) {
+	val, ok := e.s.Get(dec.Key)
+	if !ok {
+		return "", fmt.Errorf("key=%q not found", dec.Key)
+	}
+
+	switch intVal := val.(type) {
+	case *storage.Int:
+		intVal.Value--
+		return strconv.Itoa(intVal.Value), nil
+	case *storage.Int64:
+		intVal.Value--
+		return strconv.FormatInt(intVal.Value, 10), nil
+	}
+
+	return "", fmt.Errorf("val kind is not numeric. val=%q", val.String())
+}
+
+func (e *Evaluator) evalDecrByCommand(dec *ast.DecrByCommand) (string, error) {
+	val, ok := e.s.Get(dec.Key)
+	if !ok {
+		return "", fmt.Errorf("key=%q not found", dec.Key)
+	}
+
+	switch intVal := val.(type) {
+	case *storage.Int:
+		intVal.Value -= dec.Decrement
+		return strconv.Itoa(intVal.Value), nil
+	case *storage.Int64:
+		intVal.Value -= int64(dec.Decrement)
 		return strconv.FormatInt(intVal.Value, 10), nil
 	}
 

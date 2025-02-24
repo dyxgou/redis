@@ -446,3 +446,101 @@ func TestEvalIncrByInt64(t *testing.T) {
 		t.Errorf("res expected=%q. got=%q", tt.expected.String(), res)
 	}
 }
+
+func TestEvalDecrInt(t *testing.T) {
+	tt := struct {
+		cmd      *ast.DecrCommand
+		expected *storage.Int
+	}{
+		cmd: &ast.DecrCommand{
+			Token: token.New(token.DECR, "DECR"),
+			Key:   "decKeyInt",
+		},
+		expected: &storage.Int{Value: 1},
+	}
+
+	e.s.Set(tt.cmd.Key, &ast.IntegerLit{Value: 2})
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != tt.expected.String() {
+		t.Errorf("res expected=%q. got=%q", tt.expected.String(), res)
+	}
+}
+
+func TestEvalDecrByInt(t *testing.T) {
+	tt := struct {
+		cmd      *ast.DecrByCommand
+		expected *storage.Int
+	}{
+		cmd: &ast.DecrByCommand{
+			Token:     token.New(token.DECR, "DECR"),
+			Decrement: 9,
+			Key:       "decByKeyInt",
+		},
+		expected: &storage.Int{Value: 1},
+	}
+
+	e.s.Set(tt.cmd.Key, &ast.IntegerLit{Value: 10})
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != tt.expected.String() {
+		t.Errorf("res expected=%q. got=%q", tt.expected.String(), res)
+	}
+}
+
+func TestEvalDecrInt64(t *testing.T) {
+	tt := struct {
+		cmd      *ast.DecrCommand
+		expected *storage.Int64
+	}{
+		cmd: &ast.DecrCommand{
+			Token: token.New(token.DECR, "DECR"),
+			Key:   "decKeyInt64",
+		},
+		expected: &storage.Int64{Value: 1},
+	}
+
+	e.s.Set(tt.cmd.Key, &ast.BigIntegerExpr{Value: 2})
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != tt.expected.String() {
+		t.Errorf("res expected=%q. got=%q", tt.expected.String(), res)
+	}
+}
+
+func TestEvalDecrByInt64(t *testing.T) {
+	tt := struct {
+		cmd      *ast.DecrByCommand
+		expected *storage.Int64
+	}{
+		cmd: &ast.DecrByCommand{
+			Token:     token.New(token.INCR, "INCR"),
+			Decrement: 9,
+			Key:       "decByKeyInt64",
+		},
+		expected: &storage.Int64{Value: 1},
+	}
+
+	e.s.Set(tt.cmd.Key, &ast.IntegerLit{Value: 10})
+	res, err := e.Eval(tt.cmd)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if res != tt.expected.String() {
+		t.Errorf("res expected=%q. got=%q", tt.expected.String(), res)
+	}
+}
