@@ -95,7 +95,7 @@ type (
 		Value string
 	}
 
-	// ExistsCommand represents "EXISTS <key> <value>"
+	// ExistsCommand represents "EXISTS <key>"
 	ExistsCommand struct {
 		Token token.Token
 		Key   string

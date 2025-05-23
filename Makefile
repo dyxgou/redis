@@ -1,7 +1,9 @@
 run: build
+	@ echo "Building redis client..."
 	@ ./bin/server
 
 client: build
+	@ echo "Building redis..."
 	@ ./bin/client
 
 build:
