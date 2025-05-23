@@ -5,6 +5,7 @@ import (
 	"github/dyxgou/redis/pkg/token"
 	"log/slog"
 	"strconv"
+	"strings"
 )
 
 const qoute = '"'
@@ -18,15 +19,19 @@ type Lexer struct {
 	ch byte
 }
 
+func trimInput(input string) string {
+	return strings.TrimRight(input, " ")
+}
+
 func New(input string) *Lexer {
-	l := &Lexer{input: input, pos: 0, readPos: 0}
+	l := &Lexer{input: trimInput(input), pos: 0, readPos: 0}
 	l.next()
 
 	return l
 }
 
 func (l *Lexer) Reset(input string) {
-	l.input = input
+	l.input = trimInput(input)
 	l.pos = 0
 	l.readPos = 0
 	l.next()
