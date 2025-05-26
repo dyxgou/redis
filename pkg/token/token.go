@@ -10,7 +10,7 @@ const (
 	CRLF
 	TEXT
 
-	// String operations
+	// Commands
 	keyword_beg
 	IDENT
 	SET
