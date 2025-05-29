@@ -20,7 +20,9 @@ type Lexer struct {
 }
 
 func trimInput(input string) string {
-	return strings.TrimRight(input, " ")
+	return strings.TrimRightFunc(input, func(r rune) bool {
+		return r == ' ' || r == '\t'
+	})
 }
 
 func New(input string) *Lexer {
