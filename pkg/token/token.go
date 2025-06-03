@@ -121,7 +121,6 @@ func LookupIdent(ident string) TokenKind {
 	}
 
 	return IDENT
-
 }
 
 func (t *Token) String() string {

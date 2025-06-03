@@ -11,7 +11,7 @@ func FuzzNextChar(f *testing.F) {
 	f.Fuzz(func(t *testing.T, a string) {
 		l := New(a)
 
-		for i := 0; i < len(a); i++ {
+		for i := range len(a) {
 			ch := a[i]
 			if l.ch != ch {
 				t.Errorf("l.ch expected=%q. got=%q", l.ch, ch)

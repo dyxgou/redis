@@ -20,11 +20,10 @@ type (
 		Value Expression
 	}
 
-	// A GetExCommand represents the "GETEX <key> <value> <EX> <time>" if the Ex is not provided, the parser throws an error
+	// A GetExCommand represents the "GETEX <key> <EX> <time>" if the Ex is not provided, the parser throws an error
 	GetExCommand struct {
 		Token token.Token
 		Key   string
-		Value string
 		Ex    int64
 	}
 
