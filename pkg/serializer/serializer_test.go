@@ -11,6 +11,7 @@ func TestSerialize(t *testing.T) {
 		{"GET key", "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n"},
 		{"SET key value", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\nvalue\r\n"},
 		{"SET key \"value 1\"", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n+7\r\nvalue 1\r\n"},
+		{"SET key \"\"", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n+0\r\n\r\n"},
 		{"SET key \"this is a name\"", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n+14\r\nthis is a name\r\n"},
 		{"SET key123 \"this is a name\"", "*3\r\n$3\r\nSET\r\n$6\r\nkey123\r\n+14\r\nthis is a name\r\n"},
 		{"SET key :123", "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n:123\r\n"},

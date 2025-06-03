@@ -26,7 +26,12 @@ func trimInput(input string) string {
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: trimInput(input), pos: 0, readPos: 0}
+	l := &Lexer{
+		input:   trimInput(input),
+		pos:     0,
+		readPos: 0,
+	}
+
 	l.next()
 
 	return l
@@ -166,7 +171,7 @@ func (l *Lexer) skipWhitespaces() {
 	}
 }
 
-// getReadOffset checks if thue current possition is equal to the String input, if so, it returns the offset of 1 to
+// getReadOffset checks if the current possition is equal to the String input, if so, it returns the offset of 1 to
 func (l *Lexer) getReadOffset() int {
 	if l.pos == len(l.input)-1 {
 		return 1
@@ -176,7 +181,13 @@ func (l *Lexer) getReadOffset() int {
 }
 
 func (l *Lexer) readString() string {
-	pos := l.pos + 1
+	l.next()
+	pos := l.pos
+	l.next()
+
+	if l.ch == qoute {
+		return ""
+	}
 
 	for l.ch != byte(token.EOF) {
 		l.next()

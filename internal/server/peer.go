@@ -65,6 +65,11 @@ func (p *Peer) readConn() error {
 		}
 
 		res, err := p.e.Eval(cmd)
+		if len(res) == 0 {
+			p.send("\r")
+			continue
+		}
+
 		if err != nil {
 			p.send(err.Error())
 			continue

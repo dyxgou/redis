@@ -44,6 +44,44 @@ func TestEvalGetNilKey(t *testing.T) {
 	}
 }
 
+func TestGetSetEmptyString(t *testing.T) {
+	tt := struct {
+		cmd      *ast.SetCommand
+		expected *storage.String
+	}{
+		cmd: &ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "emptyKey",
+			Value: &ast.StringExpr{Token: token.New(token.STRING, "")},
+		},
+		expected: &storage.String{Value: ""},
+	}
+
+	t.Run("Setting the key", func(t *testing.T) {
+		res, err := e.Eval(tt.cmd)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if res != opSuccesful {
+			t.Fatalf("operation SET was not succesful. res=%q", res)
+		}
+	})
+
+	t.Run("Checking the key", func(t *testing.T) {
+		val, ok := e.s.Get(tt.cmd.Key)
+
+		if !ok {
+			t.Fatalf("key=%q not found", tt.cmd.Key)
+		}
+
+		if val.String() != tt.expected.String() {
+			t.Errorf("value expected=%q. got=%q", tt.expected.String(), val.String())
+		}
+	})
+}
+
 func TestEvalSet(t *testing.T) {
 	tt := struct {
 		cmd      *ast.SetCommand

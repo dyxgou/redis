@@ -41,6 +41,11 @@ func TestSetCommand(t *testing.T) {
 			Key:   "key",
 			Value: &ast.IntegerLit{Token: token.New(token.INTEGER, ":"), Value: 1},
 		}},
+		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n+0\r\n\r\n", ast.SetCommand{
+			Token: token.New(token.SET, "SET"),
+			Key:   "key",
+			Value: &ast.StringExpr{Token: token.New(token.STRING, "")},
+		}},
 		{"*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n,1.1\r\n", ast.SetCommand{
 			Token: token.New(token.SET, "SET"),
 			Key:   "key",
