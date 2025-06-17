@@ -9,10 +9,6 @@ import (
 var NotSupportedValErr = errors.New("value provided not supported")
 var Nil = &NilVal{}
 
-type values interface {
-	int | int64 | float64 | bool | string
-}
-
 type valueKind byte
 
 const (
