@@ -36,6 +36,8 @@ func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 	switch cmd := cmd.(type) {
 	case *ast.GetCommand:
 		return e.evalGetCommand(cmd)
+	case *ast.DelCommand:
+		return e.evalDelCommand(cmd)
 	case *ast.GetDelCommand:
 		return e.evalGetDelCommand(cmd)
 	case *ast.GetSetCommand:
@@ -159,6 +161,12 @@ func (e *Evaluator) evalGetExCommand(gc *ast.GetExCommand) (string, error) {
 	}
 
 	return val.String(), nil
+}
+
+func (e *Evaluator) evalDelCommand(del *ast.DelCommand) (string, error) {
+	e.s.Delete(del.Key)
+
+	return opSuccesful, nil
 }
 
 func (e *Evaluator) evalGetDelCommand(gc *ast.GetDelCommand) (string, error) {

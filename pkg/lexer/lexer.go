@@ -171,7 +171,7 @@ func (l *Lexer) skipWhitespaces() {
 	}
 }
 
-// getReadOffset checks if the current possition is equal to the String input, if so, it returns the offset of 1 to
+// getReadOffset checks if the current position is equal to the String input, if so, it returns the offset of 1 to
 func (l *Lexer) getReadOffset() int {
 	if l.pos == len(l.input)-1 {
 		return 1

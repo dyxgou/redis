@@ -46,6 +46,12 @@ type (
 		Xx bool
 	}
 
+	// A DelCommand represents "DEL <key>" and deletes a Key
+	DelCommand struct {
+		Token token.Token
+		Key   string
+	}
+
 	// A IncrCommand represents "INCR <key>" and increments the key by 1.
 	IncrCommand struct {
 		Token token.Token
@@ -106,6 +112,7 @@ func (sc *SetCommand) cmdNode()     {}
 func (gsc *GetSetCommand) cmdNode() {}
 func (ge *GetExCommand) cmdNode()   {}
 func (gd *GetDelCommand) cmdNode()  {}
+func (del *DelCommand) cmdNode()    {}
 func (inc *IncrCommand) cmdNode()   {}
 func (inc *IncrByCommand) cmdNode() {}
 func (dec *DecrCommand) cmdNode()   {}
@@ -117,6 +124,7 @@ func (sc *SetCommand) TokenLiteral() string     { return sc.Token.Literal }
 func (gsc *GetSetCommand) TokenLiteral() string { return gsc.Token.Literal }
 func (ge *GetExCommand) TokenLiteral() string   { return ge.Token.Literal }
 func (gd *GetDelCommand) TokenLiteral() string  { return gd.Token.Literal }
+func (del *DelCommand) TokenLiteral() string    { return del.Token.Literal }
 func (inc *IncrCommand) TokenLiteral() string   { return inc.Token.Literal }
 func (inc *IncrByCommand) TokenLiteral() string { return inc.Token.Literal }
 func (dec *DecrCommand) TokenLiteral() string   { return dec.Token.Literal }
@@ -178,6 +186,17 @@ func (ge *GetExCommand) String() string {
 	sb.WriteByte(' ')
 
 	writeNumArg(&sb, "EX", ge.Ex)
+	return sb.String()
+}
+
+func (del *DelCommand) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(del.Token.Literal)
+	sb.WriteByte(' ')
+
+	sb.WriteString(del.Key)
+
 	return sb.String()
 }
 

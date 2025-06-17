@@ -62,6 +62,8 @@ func (p *Parser) parseCommand() (ast.Command, error) {
 		return p.parseGetCommand()
 	case token.SET:
 		return p.parseSetCommand()
+	case token.DEL:
+		return p.parseDelCommand()
 	case token.GETSET:
 		return p.parseGetSetCommand()
 	case token.GETEX:
@@ -80,7 +82,10 @@ func (p *Parser) parseCommand() (ast.Command, error) {
 		return p.parseExistsCommand()
 	}
 
-	return nil, fmt.Errorf("command not supported. got=%d (%q)", p.curTok.Kind, p.curTok.Literal)
+	return nil, fmt.Errorf(
+		"command not supported. got=%d (%q)",
+		p.curTok.Kind, p.curTok.Literal,
+	)
 }
 
 func (p *Parser) skipBulkString() error {
@@ -295,6 +300,28 @@ func (p *Parser) parseGetExCommand() (*ast.GetExCommand, error) {
 	ge.Ex = ex
 
 	return ge, nil
+}
+
+func (p *Parser) parseDelCommand() (*ast.DelCommand, error) {
+	dc := &ast.DelCommand{Token: p.curTok}
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	key, err := p.parseIdent()
+	if err != nil {
+		return nil, err
+	}
+	dc.Key = key
+
+	p.next()
+	if err := p.checkCRLF(); err != nil {
+		return nil, err
+	}
+
+	return dc, nil
 }
 
 func (p *Parser) parseGetDelCommand() (*ast.GetDelCommand, error) {

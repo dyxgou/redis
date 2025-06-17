@@ -6,7 +6,7 @@ type Node interface {
 	TokenLiteral() string
 }
 
-// Command reprensets a Redis Command
+// Command represents a Redis Command
 type Command interface {
 	Node
 

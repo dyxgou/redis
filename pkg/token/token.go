@@ -22,6 +22,7 @@ const (
 	INCRBY
 	DECR
 	DECRBY
+	DEL
 	MGET
 	MSET
 	APPEND
@@ -82,6 +83,7 @@ var keywords = map[string]TokenKind{
 	"GETEX":  GETEX,
 	"GETDEL": GETDEL,
 	"SET":    SET,
+	"DEL":    DEL,
 	"INCR":   INCR,
 	"INCRBY": INCRBY,
 	"DECR":   DECR,
