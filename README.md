@@ -1,26 +1,53 @@
-# Golang Redis
+# 🧠 Redis Clone — In-Memory Key-Value Store in Go
 
-This is a Redis clone made by me using the Redis RESP (Request-Response Protocol) article made by Redis itself.
+A simple *Redis Clone built in Go* — great for learning how Redis works under the hood and experimenting with custom data stores.
 
-This proyect contains:
+This project implements core parts of the Redis protocol and command set using Go’s network and concurrency primitives. It’s designed for educational purposes, performance experimentation, and as a stepping stone to deeper understanding of databases and distributed systems.
 
-- Redis Server
-- Redis Client
-- Redis Parser
+👉 Check out an article create by myself to learn how to do your own: https://alejandro.buzz/projects/redis
 
-How to install:
+🚀 Features
 
-1) Clone this project.
-```sh
+- ✔️ RESP (Redis Serialization Protocol) implementation.
+- ✔️ In-memory data storage with simple data types
+- ✔️ Supports concurrent clients via goroutines.
+- ✔️ Custom protocol parser written in Go.
+
+(Add more features as you implement them!)
+
+# 📌 Why This Project Exists
+
+Redis is a high-performance in-memory database widely used for caching, messaging, session stores, and analytics. This project helps you:
+
+- Understand how Redis parses commands (RESP).
+- Explore building a database server from scratch in Go.
+- Learn about TCP networking, concurrency, and protocol design.
+
+(It’s a learning project, not a production-ready database.)
+
+# 💾 Installation
+1. **Clone the Repository**
+```bash
 $ git clone https://github.com/dyxgou/redis
 ```
 
-2) Compile and execute the redis server.
-```sh
-$ make server
+2. Download the needed dependencies (just godotenv).
+
+```bash
+$ go mod download
 ```
 
-3) Compile and execute the redis client.
-```sh
+3. **Building and Running the Redis Server**
+
+Compile the server using the provided Makefile:
+
+```bash
+$ make
+```
+
+4. **Build the Redis Client**
+To compile the custom Redis client:
+
+```bash
 $ make client
 ```
