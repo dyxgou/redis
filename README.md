@@ -1,3 +1,5 @@
+![Redis Banner](./redis.webp)
+
 # 🧠 Redis Clone — In-Memory Key-Value Store in Go
 
 A simple *Redis Clone built in Go* — great for learning how Redis works under the hood and experimenting with custom data stores.
