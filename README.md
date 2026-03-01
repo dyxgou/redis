@@ -6,7 +6,7 @@ A simple *Redis Clone built in Go* — great for learning how Redis works under 
 
 This project implements core parts of the Redis protocol and command set using Go’s network and concurrency primitives. It’s designed for educational purposes, performance experimentation, and as a stepping stone to deeper understanding of databases and distributed systems.
 
-👉 Check out an article create by myself to learn how to do your own: https://alejandro.buzz/projects/redis
+## 👉 Check out an article create by myself to learn how to do your own: https://alejandro.buzz/projects/redis
 
 🚀 Features
 
