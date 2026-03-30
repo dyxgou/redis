@@ -58,7 +58,10 @@ func (e *Evaluator) Eval(cmd ast.Command) (string, error) {
 		return e.evalExistsCommand(cmd)
 	}
 
-	return "", fmt.Errorf("command not supported for evaluation. got=%T", cmd)
+	return "", fmt.Errorf(
+		"command not supported for evaluation. got=%T",
+		cmd,
+	)
 }
 
 func (e *Evaluator) evalIncrCommand(inc *ast.IncrCommand) (string, error) {

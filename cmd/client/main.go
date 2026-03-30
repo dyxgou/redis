@@ -21,15 +21,14 @@ func main() {
 	signal.Notify(quitch, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		select {
-		case <-quitch:
-			fmt.Println()
-			slog.Info("redis client", "exit", conn.RemoteAddr())
-			if err := conn.Close(); err != nil {
-				slog.Error("closing conn", "err", err)
-			}
-			os.Exit(0)
+		<-quitch
+
+		fmt.Println()
+		slog.Info("redis client", "exit", conn.RemoteAddr())
+		if err := conn.Close(); err != nil {
+			slog.Error("closing conn", "err", err)
 		}
+		os.Exit(0)
 	}()
 
 	if err != nil {
