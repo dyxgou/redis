@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"github/dyxgou/redis/internal/evaluator"
+	"log"
 	"log/slog"
 	"net"
 	"os"
@@ -34,14 +35,15 @@ func New(cfg Config) *Server {
 }
 
 func (s *Server) Start() error {
-	ln, err := net.Listen(tcpMethod, s.Config.ListenAddr)
+	slog.Info("server starting", "addr", s.Config.ListenAddr)
+	ln, err := net.Listen("tcp", s.Config.ListenAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer ln.Close()
 
 	signal.Notify(s.quitch, os.Interrupt, syscall.SIGTERM)
-
-	if err != nil {
-		return err
-	}
 
 	slog.Info("server started at", "addr", s.Config.ListenAddr, "PID", os.Getpid())
 	s.ln = ln
@@ -57,10 +59,8 @@ func (s *Server) close() {
 }
 
 func (s *Server) loop() {
-	select {
-	case <-s.quitch:
-		s.close()
-	}
+	<-s.quitch
+	s.close()
 }
 
 func (s *Server) acceptLoop() error {

@@ -1,86 +1,142 @@
-package server
+package server_test
 
 import (
-	"context"
-	"fmt"
+	"github/dyxgou/redis/internal/server"
+	"github/dyxgou/redis/pkg/serializer"
+	"log/slog"
 	"net"
 	"os"
 	"testing"
-	"time"
 )
 
-var ts *TestSuite
-
-type TestSuite struct {
-	server *Server
-	donech chan struct{}
-	ctx    context.Context
-	addr   string
+type testSuite struct {
+	server  *server.Server
+	command string
 }
 
-func NewTestSuite(c Config) *TestSuite {
-	s := New(c)
+var ts *testSuite
 
-	go s.Start()
+func serialize(text string) (string, error) {
+	s := serializer.New(text)
 
-	return &TestSuite{
-		donech: make(chan struct{}),
-		server: s,
-		ctx:    context.Background(),
-		addr:   "localhost" + c.ListenAddr,
+	serialized, err := s.Serialize()
+
+	if err != nil {
+		return "", err
 	}
+
+	return serialized, nil
 }
 
-func (ts *TestSuite) close() {
-	ts.server.quitch <- os.Interrupt
+func New(addr, cmd string) *testSuite {
+	return &testSuite{
+		server:  server.New(server.Config{ListenAddr: addr}),
+		command: cmd,
+	}
 }
 
 func TestMain(m *testing.M) {
-	ts = NewTestSuite(Config{ListenAddr: ":5000"})
+	ts = New(":5000", "GET username")
+
+	go func() {
+		err := ts.server.Start()
+
+		if err != nil {
+			slog.Error("server error", "err", err)
+			os.Exit(1)
+		}
+	}()
 
 	code := m.Run()
 
-	ts.close()
 	os.Exit(code)
 }
 
-func (ts *TestSuite) sendMessage(msg string, conn net.Conn) error {
-	now := time.Now()
-	ctx, cancel := context.WithTimeout(ts.ctx, 20*time.Millisecond)
-	defer cancel()
-
-	_, err := conn.Write([]byte(msg))
-
+func TestGetNilCommand(t *testing.T) {
+	slog.Info("listen addr from test get", "addr", ts.server.Config.ListenAddr)
+	conn, err := net.Dial("tcp", "localhost"+ts.server.Config.ListenAddr)
 	if err != nil {
-		return err
+		t.Fatal("connection failed", "err", err)
 	}
 
-	go func() {
-		ts.donech <- struct{}{}
-	}()
+	t.Cleanup(func() {
+		if err := conn.Close(); err != nil {
+			t.Fatal(err)
+		}
+	})
 
-	select {
-	case <-ts.donech:
-		return nil
-	case <-ctx.Done():
-		return fmt.Errorf("conn sending message timeout. took=%s", time.Since(now).String())
+	serialized, err := serialize(ts.command)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = conn.Write([]byte(serialized))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resBuf := make([]byte, 1024)
+	n, err := conn.Read(resBuf)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	msg := string(resBuf[:n])
+	const nilRes = "(nil)"
+
+	if msg != nilRes {
+		t.Fatalf("server response expected=%s. got=%s", nilRes, msg)
 	}
 }
 
-func TestSendMessage(t *testing.T) {
-	t.Skip("idk why it failes but this test doesn't really test anything and the implementation has changed a lot since it was written")
-	conn, err := net.Dial(tcpMethod, ts.addr)
-	defer conn.Close()
-
-	if err != nil {
-		t.Error(err)
+func TestSetCommand(t *testing.T) {
+	slog.Info("listen addr from test get", "addr", ts.server.Config.ListenAddr)
+	tests := []struct {
+		cmd string
+		res string
+	}{
+		{
+			cmd: "SET username Alejandro",
+			res: "OK",
+		},
+		{
+			cmd: "GET username",
+			res: "Alejandro",
+		},
 	}
 
-	err = ts.sendMessage("hello from test!", conn)
-
+	conn, err := net.Dial("tcp", "localhost"+ts.server.Config.ListenAddr)
 	if err != nil {
-		t.Error(err)
+		t.Fatal("connection failed", "err", err)
 	}
 
-	t.Log("message sent succesfully!")
+	t.Cleanup(func() {
+		if err := conn.Close(); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	for _, tt := range tests {
+		serialized, err := serialize(tt.cmd)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = conn.Write([]byte(serialized))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		resBuf := make([]byte, 1024)
+		n, err := conn.Read(resBuf)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		res := string(resBuf[:n])
+
+		if res != tt.res {
+			t.Fatalf("server response expected=%s. got=%s", tt.res, res)
+		}
+	}
 }
