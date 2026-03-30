@@ -41,6 +41,12 @@ $ go mod download
 
 3. **Building and Running the Redis Server**
 
+Before compiling the server, you have to create a `.env` file which contains a variable with the port.
+
+```.env
+PORT=":5000"
+```
+
 Compile the server using the provided Makefile:
 
 ```bash
