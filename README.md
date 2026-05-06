@@ -15,8 +15,6 @@ This project implements core parts of the Redis protocol and command set using G
 - ✔️ Supports concurrent clients via goroutines.
 - ✔️ Custom protocol parser written in Go.
 
-(Add more features as you implement them!)
-
 # 📌 Why This Project Exists
 
 Redis is a high-performance in-memory database widely used for caching, messaging, session stores, and analytics. This project helps you:
@@ -24,8 +22,6 @@ Redis is a high-performance in-memory database widely used for caching, messagin
 - Understand how Redis parses commands (RESP).
 - Explore building a database server from scratch in Go.
 - Learn about TCP networking, concurrency, and protocol design.
-
-(It’s a learning project, not a production-ready database.)
 
 # 💾 Installation
 1. **Clone the Repository**
