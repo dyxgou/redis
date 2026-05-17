@@ -1,57 +1,90 @@
-![Redis Banner](./redis.webp)
+![Redis Banner](redis.webp)
 
-# 🧠 Redis Clone — In-Memory Key-Value Store in Go
+# Redis Clone — In-Memory Key-Value Store in Go
 
-A simple *Redis Clone built in Go* — great for learning how Redis works under the hood and experimenting with custom data stores.
+A fully functional Redis clone built in pure Go — no external libraries, no shortcuts. This project implements the RESP (Redis Serialization Protocol) from scratch, a custom TCP server with concurrent client handling via goroutines, a lexer and AST-based command parser, and a thread-safe in-memory key-value store.
 
-This project implements core parts of the Redis protocol and command set using Go’s network and concurrency primitives. It’s designed for educational purposes, performance experimentation, and as a stepping stone to deeper understanding of databases and distributed systems.
+Built not to use Redis, but to understand exactly how it works at every layer.
 
+<<<<<<< HEAD
 👉 Check out an article I wrote to teach you how to do your own: https://alejandro.buzz/projects/redis
+=======
+👉 Read the full article: [alejandro.buzz/projects/redis](https://alejandro.buzz/projects/redis)
+>>>>>>> 41ec4dc (add(README): Made the readme so much better)
 
-🚀 Features
+---
 
-- ✔️ RESP (Redis Serialization Protocol) implementation.
-- ✔️ In-memory data storage with simple data types
-- ✔️ Supports concurrent clients via goroutines.
-- ✔️ Custom protocol parser written in Go.
+## Features
 
+<<<<<<< HEAD
 # 📌 Why This Project Exists
+=======
+- ✔️ Full RESP (Redis Serialization Protocol) parser
+- ✔️ Custom TCP server handling concurrent clients via goroutines
+- ✔️ Lexer and AST-based command parser
+- ✔️ Thread-safe in-memory key-value store
+- ✔️ Custom Redis client included
+- ✔️ Clean Go project structure across `cmd/`, `internal/`, and `pkg/`
 
-Redis is a high-performance in-memory database widely used for caching, messaging, session stores, and analytics. This project helps you:
+---
+>>>>>>> 41ec4dc (add(README): Made the readme so much better)
 
-- Understand how Redis parses commands (RESP).
-- Explore building a database server from scratch in Go.
-- Learn about TCP networking, concurrency, and protocol design.
+## Why This Project Exists
 
+Redis is one of the most widely used systems in modern infrastructure — caching, pub/sub, session stores, leaderboards. Most developers use it daily without knowing what happens between a `SET` command and the data being stored.
+
+<<<<<<< HEAD
 # 💾 Installation
 1. **Clone the Repository**
+=======
+This project answers that question by implementing Redis from the ground up — every layer, every decision, in Go.
+
+---
+
+## Installation
+
+**1. Clone the repository**
+>>>>>>> 41ec4dc (add(README): Made the readme so much better)
 ```bash
-$ git clone https://github.com/dyxgou/redis
+git clone https://github.com/dyxgou/redis
 ```
 
-2. Download the needed dependencies (just godotenv).
-
+**2. Download dependencies**
 ```bash
-$ go mod download
+go mod download
 ```
 
-3. **Building and Running the Redis Server**
+**3. Configure the environment**
 
-Before compiling the server, you have to create a `.env` file which contains a variable with the port.
-
-```.env
+Create a `.env` file in the root with the following:
+```env
 PORT=":5000"
 ```
 
-Compile the server using the provided Makefile:
-
+**4. Build and run the server**
 ```bash
-$ make
+make
 ```
 
-4. **Build the Redis Client**
-To compile the custom Redis client:
-
+**5. Build the custom Redis client**
 ```bash
-$ make client
+make client
 ```
+
+---
+
+## Architecture
+
+The project follows idiomatic Go conventions:
+
+cmd/        → server and client entrypoints
+internal/   → core logic (parser, store, server)
+pkg/        → shared utilities and protocol types
+
+---
+
+## Article
+
+A deep dive into how this was built — from raw TCP sockets to the RESP protocol parser — with custom animations explaining each layer:
+
+👉 [alejandro.buzz/projects/redis](https://alejandro.buzz/projects/redis)
