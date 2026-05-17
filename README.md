@@ -12,7 +12,6 @@ Built not to use Redis, but to understand exactly how it works at every layer.
 
 ## Features
 
-<<<<<<< HEAD
 # 📌 Why This Project Exists
 =======
 - ✔️ Full RESP (Redis Serialization Protocol) parser
@@ -23,13 +22,11 @@ Built not to use Redis, but to understand exactly how it works at every layer.
 - ✔️ Clean Go project structure across `cmd/`, `internal/`, and `pkg/`
 
 ---
->>>>>>> 41ec4dc (add(README): Made the readme so much better)
 
 ## Why This Project Exists
 
 Redis is one of the most widely used systems in modern infrastructure — caching, pub/sub, session stores, leaderboards. Most developers use it daily without knowing what happens between a `SET` command and the data being stored.
 
-<<<<<<< HEAD
 # 💾 Installation
 1. **Clone the Repository**
 =======
@@ -40,7 +37,6 @@ This project answers that question by implementing Redis from the ground up — 
 ## Installation
 
 **1. Clone the repository**
->>>>>>> 41ec4dc (add(README): Made the readme so much better)
 ```bash
 git clone https://github.com/dyxgou/redis
 ```
