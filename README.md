@@ -13,7 +13,6 @@ Built not to use Redis, but to understand exactly how it works at every layer.
 ## Features
 
 # 📌 Why This Project Exists
-=======
 - ✔️ Full RESP (Redis Serialization Protocol) parser
 - ✔️ Custom TCP server handling concurrent clients via goroutines
 - ✔️ Lexer and AST-based command parser
@@ -29,7 +28,6 @@ Redis is one of the most widely used systems in modern infrastructure — cachin
 
 # 💾 Installation
 1. **Clone the Repository**
-=======
 This project answers that question by implementing Redis from the ground up — every layer, every decision, in Go.
 
 ---
@@ -69,9 +67,11 @@ make client
 
 The project follows idiomatic Go conventions:
 
-cmd/        → server and client entrypoints
-internal/   → core logic (parser, store, server)
-pkg/        → shared utilities and protocol types
+**cmd/**      → server and client entrypoints
+
+**internal/**   → core logic (parser, store, server)
+
+**pkg/**        → shared utilities and protocol types
 
 ---
 
