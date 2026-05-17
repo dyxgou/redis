@@ -6,11 +6,7 @@ A fully functional Redis clone built in pure Go — no external libraries, no sh
 
 Built not to use Redis, but to understand exactly how it works at every layer.
 
-<<<<<<< HEAD
-👉 Check out an article I wrote to teach you how to do your own: https://alejandro.buzz/projects/redis
-=======
 👉 Read the full article: [alejandro.buzz/projects/redis](https://alejandro.buzz/projects/redis)
->>>>>>> 41ec4dc (add(README): Made the readme so much better)
 
 ---
 
